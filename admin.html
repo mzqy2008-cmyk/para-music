@@ -21,6 +21,7 @@
     </script>
     <style>
         .bg-glass { background: rgba(43,45,47,0.9); backdrop-filter: blur(10px); }
+        .bg-glass-light { background: rgba(30,31,33,0.95); }
     </style>
 </head>
 <body class="bg-dark text-white min-h-screen">
@@ -29,8 +30,8 @@
     <div id="login-page" class="min-h-screen flex items-center justify-center px-4">
         <div class="bg-glass rounded-2xl p-10 w-full max-w-md">
             <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold mb-2">PARA</h1>
-                <p class="text-gray-400">管理后台</p>
+                <h1 class="text-3xl font-bold mb-2 tracking-widest">PARA</h1>
+                <p class="text-gray-400 text-sm">管理后台</p>
             </div>
             <div id="login-error" class="hidden mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400 text-sm"></div>
             <form id="login-form" class="space-y-4">
@@ -59,8 +60,8 @@
     <div id="admin-page" class="hidden">
         <!-- 顶部导航 -->
         <nav class="bg-dark-light border-b border-gray-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-            <h1 class="text-xl font-bold">PARA 管理后台</h1>
-            <div class="flex items-center gap-4">
+            <h1 class="text-lg font-bold tracking-widest">PARA 管理后台</h1>
+            <div class="flex items-center gap-5">
                 <a href="index.html" target="_blank" class="text-gray-400 hover:text-primary text-sm transition-colors">
                     <i class="fa fa-external-link mr-1"></i>查看前台
                 </a>
@@ -70,21 +71,23 @@
             </div>
         </nav>
 
-        <div class="container mx-auto px-4 py-8">
+        <div class="container mx-auto px-4 py-8 max-w-5xl">
             <!-- Tab 切换 -->
             <div class="flex gap-4 mb-8 border-b border-gray-800">
-                <button class="admin-tab pb-4 px-2 font-bold text-primary border-b-2 border-primary" data-tab="music">
-                    <i class="fa fa-music mr-2"></i>好音乐审核
+                <button class="admin-tab pb-4 px-2 font-bold text-primary border-b-2 border-primary text-sm" data-tab="music">
+                    <i class="fa fa-music mr-2"></i>好音乐
                     <span id="pending-count" class="ml-2 px-2 py-0.5 bg-primary text-dark text-xs rounded-full">0</span>
                 </button>
-                <button class="admin-tab pb-4 px-2 text-gray-400 hover:text-white transition-colors" data-tab="products">
-                    <i class="fa fa-shopping-bag mr-2"></i>好周边管理
+                <button class="admin-tab pb-4 px-2 text-gray-400 hover:text-white transition-colors text-sm" data-tab="upload">
+                    <i class="fa fa-cloud-upload mr-2"></i>上传音乐
+                </button>
+                <button class="admin-tab pb-4 px-2 text-gray-400 hover:text-white transition-colors text-sm" data-tab="products">
+                    <i class="fa fa-shopping-bag mr-2"></i>好周边
                 </button>
             </div>
 
             <!-- 好音乐审核 -->
             <div id="tab-music" class="admin-content">
-                <!-- 筛选 -->
                 <div class="flex gap-3 mb-6">
                     <button class="music-filter px-4 py-2 rounded-full bg-primary text-dark font-bold text-sm" data-status="pending">待审核</button>
                     <button class="music-filter px-4 py-2 rounded-full bg-dark-lighter text-white text-sm hover:bg-gray-700" data-status="approved">已发布</button>
@@ -95,9 +98,72 @@
                 </div>
             </div>
 
+            <!-- 上传音乐（后台直传） -->
+            <div id="tab-upload" class="admin-content hidden">
+                <div class="bg-dark-light rounded-2xl p-6 border border-gray-800">
+                    <h3 class="font-bold text-lg mb-5 flex items-center gap-2">
+                        <i class="fa fa-cloud-upload text-primary"></i> 后台直接上传音乐
+                    </h3>
+                    <div id="upload-success" class="hidden mb-4 p-3 bg-primary bg-opacity-20 border border-primary rounded-lg text-primary text-sm">上传成功，已直接发布！</div>
+                    <div id="upload-error" class="hidden mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400 text-sm"></div>
+                    <form id="upload-music-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">歌名 *</label>
+                                <input type="text" id="u-song-name" required placeholder="歌曲名称"
+                                    class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">歌手/乐队 *</label>
+                                <input type="text" id="u-artist" required placeholder="歌手名"
+                                    class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">音乐风格 *</label>
+                            <select id="u-category" required
+                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-primary">
+                                <option value="">请选择</option>
+                                <option value="摇滚">摇滚</option>
+                                <option value="爵士">爵士</option>
+                                <option value="电子">电子</option>
+                                <option value="民谣">民谣</option>
+                                <option value="流行">流行</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">音频文件 * (MP3/WAV/M4A，限50MB)</label>
+                            <label class="flex items-center gap-3 px-4 py-3 bg-dark-lighter border border-gray-700 rounded-lg cursor-pointer hover:border-primary transition-colors">
+                                <i class="fa fa-upload text-primary"></i>
+                                <span id="u-audio-label" class="text-sm text-gray-500">点击选择音频文件</span>
+                                <input type="file" id="u-audio-file" accept="audio/*" class="hidden">
+                            </label>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">参考链接（可选）</label>
+                            <input type="url" id="u-music-link" placeholder="https://music.163.com/..."
+                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary">
+                        </div>
+                        <!-- 上传进度 -->
+                        <div id="u-progress-wrap" class="hidden">
+                            <div class="flex justify-between text-xs text-gray-400 mb-1.5">
+                                <span>上传中...</span><span id="u-pct">0%</span>
+                            </div>
+                            <div class="w-full h-2 bg-gray-800 rounded-full">
+                                <div id="u-progress-bar" class="h-full bg-primary rounded-full transition-all" style="width:0%"></div>
+                            </div>
+                        </div>
+                        <button type="submit" id="upload-music-btn"
+                            class="px-8 py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all text-sm">
+                            <i class="fa fa-cloud-upload mr-2"></i>上传并直接发布
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <!-- 好周边管理 -->
             <div id="tab-products" class="admin-content hidden">
-                <!-- 添加商品表单 -->
                 <div class="bg-dark-light rounded-2xl p-6 mb-8 border border-gray-800">
                     <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
                         <i class="fa fa-plus-circle text-primary"></i> 添加商品
@@ -108,22 +174,22 @@
                         <div>
                             <label class="block text-sm text-gray-400 mb-1">商品名称 *</label>
                             <input type="text" id="p-name" required placeholder="商品名称"
-                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary">
+                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary">
                         </div>
                         <div>
                             <label class="block text-sm text-gray-400 mb-1">价格</label>
                             <input type="number" id="p-price" step="0.01" placeholder="如：199.00"
-                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary">
+                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary">
                         </div>
                         <div>
                             <label class="block text-sm text-gray-400 mb-1">购买链接 * (淘宝/1688)</label>
                             <input type="url" id="p-link" required placeholder="https://..."
-                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary">
+                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary">
                         </div>
                         <div>
                             <label class="block text-sm text-gray-400 mb-1">店铺类型 *</label>
                             <select id="p-shop-type" required
-                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary">
+                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-primary">
                                 <option value="taobao">淘宝</option>
                                 <option value="1688">1688</option>
                                 <option value="other">其他</option>
@@ -132,24 +198,22 @@
                         <div class="md:col-span-2">
                             <label class="block text-sm text-gray-400 mb-1">图片链接</label>
                             <input type="url" id="p-image" placeholder="https://... (商品图片地址)"
-                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary">
+                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm text-gray-400 mb-1">商品描述</label>
                             <textarea id="p-desc" rows="2" placeholder="简短描述..."
-                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-primary resize-none"></textarea>
+                                class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary resize-none"></textarea>
                         </div>
                         <div class="md:col-span-2">
                             <button type="submit" id="add-product-btn"
-                                class="px-8 py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all">
+                                class="px-8 py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all text-sm">
                                 <i class="fa fa-plus mr-2"></i>添加商品
                             </button>
                         </div>
                     </form>
                 </div>
-
-                <!-- 商品列表 -->
-                <h3 class="font-bold text-lg mb-4">当前商品</h3>
+                <h3 class="font-bold text-base mb-4">当前商品</h3>
                 <div id="products-admin-list" class="space-y-4">
                     <div class="text-center py-8 text-gray-400"><i class="fa fa-spinner fa-spin text-2xl"></i></div>
                 </div>
@@ -163,27 +227,19 @@
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let isLoggedIn = false;
-    let currentMusicFilter = 'pending';
-
-    // ===== 登录 =====
-    // 简单前端密码验证（后台管理用）
     const ADMIN_USER = 'para_admin';
     const ADMIN_PASS = 'para2024';
+    let currentMusicFilter = 'pending';
 
     // 检查已登录
-    if (sessionStorage.getItem('para_admin_logged') === 'true') {
-        showAdmin();
-    }
+    if (sessionStorage.getItem('para_admin_logged') === 'true') showAdmin();
 
     document.getElementById('login-form').addEventListener('submit', function(e) {
         e.preventDefault();
-        const username = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value;
         const errEl = document.getElementById('login-error');
         errEl.classList.add('hidden');
-
-        if (username === ADMIN_USER && password === ADMIN_PASS) {
+        if (document.getElementById('login-username').value.trim() === ADMIN_USER &&
+            document.getElementById('login-password').value === ADMIN_PASS) {
             sessionStorage.setItem('para_admin_logged', 'true');
             showAdmin();
         } else {
@@ -205,7 +261,7 @@
         loadAdminProducts();
     }
 
-    // ===== Tab 切换 =====
+    // ===== Tab =====
     document.querySelectorAll('.admin-tab').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.admin-tab').forEach(t => {
@@ -238,57 +294,48 @@
         const list = document.getElementById('music-list');
         list.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fa fa-spinner fa-spin text-2xl"></i></div>';
 
-        // 需要绕过 RLS 查询所有状态（使用 service role 或放开策略）
-        // 这里用管理员模式查询 - 需要额外配置
         const { data, error } = await db
             .from('music_submissions')
             .select('*')
             .eq('status', status)
             .order('created_at', { ascending: false });
 
-        if (error) {
-            list.innerHTML = `<div class="text-center py-8 text-red-400">加载失败：${error.message}</div>`;
-            return;
-        }
+        if (error) { list.innerHTML = `<div class="text-center py-8 text-red-400">加载失败：${error.message}</div>`; return; }
 
-        // 更新待审核数量
-        if (status === 'pending') {
-            document.getElementById('pending-count').textContent = data ? data.length : 0;
-        }
+        if (status === 'pending') document.getElementById('pending-count').textContent = data ? data.length : 0;
 
-        if (!data || data.length === 0) {
-            list.innerHTML = '<div class="text-center py-8 text-gray-400">暂无数据</div>';
-            return;
-        }
+        if (!data || data.length === 0) { list.innerHTML = '<div class="text-center py-8 text-gray-400">暂无数据</div>'; return; }
+
+        const statusBadge = {
+            pending: '<span class="px-2 py-0.5 bg-yellow-500 bg-opacity-20 text-yellow-400 text-xs rounded-full">待审核</span>',
+            approved: '<span class="px-2 py-0.5 bg-green-500 bg-opacity-20 text-green-400 text-xs rounded-full">已发布</span>',
+            rejected: '<span class="px-2 py-0.5 bg-red-500 bg-opacity-20 text-red-400 text-xs rounded-full">已拒绝</span>'
+        };
 
         list.innerHTML = '';
         data.forEach(item => {
             const card = document.createElement('div');
-            card.className = 'bg-dark-light rounded-xl p-6 border border-gray-800 flex flex-col md:flex-row md:items-center gap-4';
-            const statusBadge = {
-                pending: '<span class="px-2 py-1 bg-yellow-500 bg-opacity-20 text-yellow-400 text-xs rounded-full">待审核</span>',
-                approved: '<span class="px-2 py-1 bg-green-500 bg-opacity-20 text-green-400 text-xs rounded-full">已发布</span>',
-                rejected: '<span class="px-2 py-1 bg-red-500 bg-opacity-20 text-red-400 text-xs rounded-full">已拒绝</span>'
-            }[item.status];
-
+            card.className = 'bg-dark-light rounded-xl p-5 border border-gray-800 flex flex-col md:flex-row md:items-center gap-4';
             card.innerHTML = `
-                <div class="flex-1">
+                <div class="flex-1 min-w-0">
                     <div class="flex flex-wrap items-center gap-2 mb-2">
-                        ${statusBadge}
-                        <span class="px-2 py-1 bg-primary bg-opacity-10 text-primary text-xs rounded-full">${item.category}</span>
-                        <span class="text-xs text-gray-500">${item.user_id}</span>
+                        ${statusBadge[item.status] || ''}
+                        <span class="px-2 py-0.5 bg-primary bg-opacity-10 text-primary text-xs rounded-full">${item.category}</span>
+                        <span class="text-xs text-gray-600 font-mono">${item.user_id}</span>
+                        ${item.audio_url ? '<span class="px-2 py-0.5 bg-blue-500 bg-opacity-20 text-blue-400 text-xs rounded-full"><i class="fa fa-music mr-1"></i>含音频</span>' : ''}
                     </div>
-                    <h4 class="font-bold text-lg">${item.song_name}</h4>
-                    <p class="text-gray-400">${item.artist}</p>
-                    <a href="${item.music_link}" target="_blank" class="text-primary text-sm hover:underline mt-1 inline-block">
-                        <i class="fa fa-external-link mr-1"></i>试听链接
-                    </a>
-                    <p class="text-xs text-gray-600 mt-1">${new Date(item.created_at).toLocaleString('zh-CN')}</p>
+                    <h4 class="font-bold">${item.song_name}</h4>
+                    <p class="text-gray-400 text-sm">${item.artist}</p>
+                    <div class="flex items-center gap-3 mt-1.5">
+                        ${item.audio_url ? `<audio controls class="h-7 mt-1" style="max-width:220px;filter:invert(1)opacity(0.5)"><source src="${item.audio_url}"></audio>` : ''}
+                        ${item.music_link ? `<a href="${item.music_link}" target="_blank" class="text-primary text-xs hover:underline"><i class="fa fa-external-link mr-1"></i>外链</a>` : ''}
+                    </div>
+                    <p class="text-xs text-gray-700 mt-1">${new Date(item.created_at).toLocaleString('zh-CN')}</p>
                 </div>
-                <div class="flex gap-2 flex-shrink-0">
-                    ${item.status !== 'approved' ? `<button onclick="updateMusicStatus(${item.id}, 'approved')" class="px-4 py-2 bg-green-500 bg-opacity-20 text-green-400 rounded-lg hover:bg-opacity-40 transition-all text-sm font-bold"><i class="fa fa-check mr-1"></i>发布</button>` : ''}
-                    ${item.status !== 'rejected' ? `<button onclick="updateMusicStatus(${item.id}, 'rejected')" class="px-4 py-2 bg-red-500 bg-opacity-20 text-red-400 rounded-lg hover:bg-opacity-40 transition-all text-sm font-bold"><i class="fa fa-times mr-1"></i>拒绝</button>` : ''}
-                    <button onclick="deleteMusicItem(${item.id})" class="px-4 py-2 bg-gray-700 text-gray-400 rounded-lg hover:bg-gray-600 transition-all text-sm"><i class="fa fa-trash"></i></button>
+                <div class="flex gap-2 flex-shrink-0 flex-wrap">
+                    ${item.status !== 'approved' ? `<button onclick="updateMusicStatus(${item.id}, 'approved')" class="px-4 py-2 bg-green-500 bg-opacity-20 text-green-400 rounded-lg hover:bg-opacity-40 text-sm font-bold"><i class="fa fa-check mr-1"></i>发布</button>` : ''}
+                    ${item.status !== 'rejected' ? `<button onclick="updateMusicStatus(${item.id}, 'rejected')" class="px-4 py-2 bg-red-500 bg-opacity-20 text-red-400 rounded-lg hover:bg-opacity-40 text-sm font-bold"><i class="fa fa-times mr-1"></i>拒绝</button>` : ''}
+                    <button onclick="deleteMusicItem(${item.id})" class="px-4 py-2 bg-gray-700 text-gray-400 rounded-lg hover:bg-gray-600 text-sm"><i class="fa fa-trash"></i></button>
                 </div>`;
             list.appendChild(card);
         });
@@ -307,41 +354,122 @@
         else alert('删除失败：' + error.message);
     }
 
-    // ===== 加载商品列表 =====
-    async function loadAdminProducts() {
-        const list = document.getElementById('products-admin-list');
-        list.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fa fa-spinner fa-spin text-2xl"></i></div>';
+    // ===== 后台上传音乐 =====
+    document.getElementById('u-audio-file').addEventListener('change', function() {
+        const label = document.getElementById('u-audio-label');
+        label.textContent = this.files[0] ? this.files[0].name : '点击选择音频文件';
+        label.style.color = this.files[0] ? '#00FFD9' : '';
+    });
 
-        const { data, error } = await db.from('products').select('*').order('sort_order', { ascending: true });
+    document.getElementById('upload-music-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('upload-music-btn');
+        const successEl = document.getElementById('upload-success');
+        const errorEl = document.getElementById('upload-error');
+        const progressWrap = document.getElementById('u-progress-wrap');
+        successEl.classList.add('hidden');
+        errorEl.classList.add('hidden');
 
-        if (!data || data.length === 0) {
-            list.innerHTML = '<div class="text-center py-8 text-gray-400">还没有商品，添加第一件吧！</div>';
+        const audioFile = document.getElementById('u-audio-file').files[0];
+        if (!audioFile) { errorEl.textContent = '请选择音频文件'; errorEl.classList.remove('hidden'); return; }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>上传中...';
+        progressWrap.classList.remove('hidden');
+
+        const filePath = `music/${Date.now()}_${audioFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+        const audioUrl = await uploadAudioAdmin(audioFile, filePath);
+        progressWrap.classList.add('hidden');
+
+        if (!audioUrl) {
+            errorEl.textContent = '音频上传失败，请检查网络或文件大小（限50MB）';
+            errorEl.classList.remove('hidden');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-cloud-upload mr-2"></i>上传并直接发布';
             return;
         }
 
+        const { error } = await db.from('music_submissions').insert({
+            user_id: 'PARA_ADMIN',
+            song_name: document.getElementById('u-song-name').value.trim(),
+            artist: document.getElementById('u-artist').value.trim(),
+            category: document.getElementById('u-category').value,
+            music_link: document.getElementById('u-music-link').value.trim() || null,
+            audio_url: audioUrl,
+            status: 'approved'  // 后台上传直接发布
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-cloud-upload mr-2"></i>上传并直接发布';
+
+        if (error) {
+            errorEl.textContent = '保存失败：' + error.message;
+            errorEl.classList.remove('hidden');
+        } else {
+            successEl.classList.remove('hidden');
+            this.reset();
+            document.getElementById('u-audio-label').textContent = '点击选择音频文件';
+            document.getElementById('u-audio-label').style.color = '';
+            setTimeout(() => successEl.classList.add('hidden'), 3000);
+        }
+    });
+
+    function uploadAudioAdmin(file, path) {
+        return new Promise(resolve => {
+            const bar = document.getElementById('u-progress-bar');
+            const pct = document.getElementById('u-pct');
+            const url = `${SUPABASE_URL}/storage/v1/object/para-audio/${path}`;
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_KEY);
+            xhr.setRequestHeader('x-upsert', 'true');
+            xhr.setRequestHeader('Content-Type', file.type || 'audio/mpeg');
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable) {
+                    const p = Math.round(e.loaded / e.total * 100);
+                    bar.style.width = p + '%';
+                    pct.textContent = p + '%';
+                }
+            };
+            xhr.onload = () => {
+                if (xhr.status === 200 || xhr.status === 201) {
+                    resolve(`${SUPABASE_URL}/storage/v1/object/public/para-audio/${path}`);
+                } else { resolve(null); }
+            };
+            xhr.onerror = () => resolve(null);
+            xhr.send(file);
+        });
+    }
+
+    // ===== 商品管理 =====
+    async function loadAdminProducts() {
+        const list = document.getElementById('products-admin-list');
+        list.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fa fa-spinner fa-spin text-2xl"></i></div>';
+        const { data } = await db.from('products').select('*').order('sort_order', { ascending: true });
+        if (!data || data.length === 0) { list.innerHTML = '<div class="text-center py-8 text-gray-400">还没有商品，添加第一件吧！</div>'; return; }
         list.innerHTML = '';
         data.forEach(p => {
             const card = document.createElement('div');
             card.className = 'bg-dark-light rounded-xl p-5 border border-gray-800 flex flex-col md:flex-row md:items-center gap-4';
             card.innerHTML = `
-                <div class="w-16 h-16 rounded-lg bg-dark-lighter flex-shrink-0 overflow-hidden">
-                    ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center"><i class="fa fa-shopping-bag text-gray-600"></i></div>'}
+                <div class="w-14 h-14 rounded-lg bg-dark-lighter flex-shrink-0 overflow-hidden">
+                    ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center"><i class="fa fa-shopping-bag text-gray-600 text-xl"></i></div>'}
                 </div>
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                        <h4 class="font-bold">${p.name}</h4>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                        <h4 class="font-bold text-sm">${p.name}</h4>
                         ${p.is_active ? '<span class="px-2 py-0.5 bg-green-500 bg-opacity-20 text-green-400 text-xs rounded-full">上架</span>' : '<span class="px-2 py-0.5 bg-gray-700 text-gray-400 text-xs rounded-full">下架</span>'}
                         <span class="px-2 py-0.5 bg-dark-lighter text-gray-400 text-xs rounded-full">${p.shop_type === 'taobao' ? '淘宝' : p.shop_type === '1688' ? '1688' : '其他'}</span>
                     </div>
-                    ${p.price ? `<p class="text-primary font-bold">¥${p.price}</p>` : ''}
-                    ${p.description ? `<p class="text-gray-400 text-sm">${p.description}</p>` : ''}
+                    ${p.price ? `<p class="text-primary text-sm font-bold">¥${p.price}</p>` : ''}
+                    ${p.description ? `<p class="text-gray-400 text-xs truncate">${p.description}</p>` : ''}
                 </div>
                 <div class="flex gap-2 flex-shrink-0">
                     <button onclick="toggleProductStatus(${p.id}, ${p.is_active})"
-                        class="px-4 py-2 ${p.is_active ? 'bg-yellow-500 bg-opacity-20 text-yellow-400' : 'bg-green-500 bg-opacity-20 text-green-400'} rounded-lg hover:bg-opacity-40 transition-all text-sm font-bold">
+                        class="px-3 py-2 ${p.is_active ? 'bg-yellow-500 bg-opacity-20 text-yellow-400' : 'bg-green-500 bg-opacity-20 text-green-400'} rounded-lg hover:bg-opacity-40 text-sm font-bold">
                         ${p.is_active ? '<i class="fa fa-eye-slash mr-1"></i>下架' : '<i class="fa fa-eye mr-1"></i>上架'}
                     </button>
-                    <button onclick="deleteProduct(${p.id})" class="px-4 py-2 bg-red-500 bg-opacity-20 text-red-400 rounded-lg hover:bg-opacity-40 transition-all text-sm"><i class="fa fa-trash"></i></button>
+                    <button onclick="deleteProduct(${p.id})" class="px-3 py-2 bg-red-500 bg-opacity-20 text-red-400 rounded-lg hover:bg-opacity-40 text-sm"><i class="fa fa-trash"></i></button>
                 </div>`;
             list.appendChild(card);
         });
@@ -349,28 +477,24 @@
 
     async function toggleProductStatus(id, current) {
         const { error } = await db.from('products').update({ is_active: !current }).eq('id', id);
-        if (!error) loadAdminProducts();
-        else alert('操作失败：' + error.message);
+        if (!error) loadAdminProducts(); else alert('操作失败：' + error.message);
     }
 
     async function deleteProduct(id) {
         if (!confirm('确认删除此商品？')) return;
         const { error } = await db.from('products').delete().eq('id', id);
-        if (!error) loadAdminProducts();
-        else alert('删除失败：' + error.message);
+        if (!error) loadAdminProducts(); else alert('删除失败：' + error.message);
     }
 
-    // ===== 添加商品 =====
     document.getElementById('add-product-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         const btn = document.getElementById('add-product-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>添加中...';
         const successEl = document.getElementById('product-add-success');
         const errorEl = document.getElementById('product-add-error');
         successEl.classList.add('hidden');
         errorEl.classList.add('hidden');
-
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>添加中...';
 
         const price = document.getElementById('p-price').value;
         const { error } = await db.from('products').insert({

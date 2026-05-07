@@ -1,4 +1,6 @@
-<html lang="zh-CN"><head>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PARA | 音乐艺术家</title>
@@ -26,16 +28,120 @@
         @layer utilities {
             .text-shadow { text-shadow: 0 0 10px rgba(0,255,255,0.7); }
             .text-shadow-lg { text-shadow: 0 0 15px rgba(0,255,255,0.9), 0 0 30px rgba(0,255,255,0.5); }
-            .bg-glass { background: rgba(43,45,47,0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+            .bg-glass { background: rgba(21,22,23,0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
             .bg-glass-light { background: rgba(43,45,47,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
             .scrollbar-hide::-webkit-scrollbar { display: none; }
             .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-            .gradient-border {
-                position: relative; border: double 1px transparent;
-                background-image: linear-gradient(#151617, #151617), linear-gradient(0deg, #00FFD9, #00FFD9);
-                background-origin: border-box; background-clip: padding-box, border-box;
-            }
         }
+    </style>
+    <style>
+        /* 分类卡片展开动画 */
+        .cat-panel {
+            flex: 1;
+            transition: flex 0.55s cubic-bezier(0.4,0,0.2,1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .cat-panel.active { flex: 3; }
+        .cat-panel img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: filter 0.4s, transform 0.4s;
+            filter: grayscale(60%) brightness(0.7);
+        }
+        .cat-panel.active img, .cat-panel:hover img {
+            filter: grayscale(0%) brightness(0.85);
+            transform: scale(1.04);
+        }
+        .cat-panel .overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+            z-index: 1;
+        }
+        .cat-panel .cat-info {
+            position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+            z-index: 2; text-align: center; white-space: nowrap;
+        }
+        .cat-panel .cat-name {
+            font-size: 1.6rem; font-weight: 900; color: #fff;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+            transition: color 0.3s;
+        }
+        .cat-panel.active .cat-name { color: #00FFD9; text-shadow: 0 0 20px rgba(0,255,217,0.6); }
+        .cat-panel .cat-desc {
+            font-size: 0.8rem; color: rgba(255,255,255,0.6); margin-top: 4px;
+        }
+        /* 播放控制栏 */
+        #player-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(15,16,17,0.92); backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(0,255,217,0.15);
+            z-index: 200;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+            padding: 14px 24px;
+        }
+        #player-bar.visible { transform: translateY(0); }
+        /* 进度条 */
+        #progress-bar { cursor: pointer; }
+        #progress-fill { transition: width 0.2s linear; }
+        /* 弹窗 */
+        #song-list-modal {
+            position: fixed; inset: 0; z-index: 300;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        #song-list-modal.open { display: flex; }
+        #song-list-inner {
+            background: #1E1F21; border-radius: 20px;
+            width: 100%; max-width: 560px; max-height: 80vh;
+            overflow-y: auto; padding: 28px;
+            border: 1px solid rgba(0,255,217,0.15);
+        }
+        /* 投稿表单折叠 */
+        #submit-form-body {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        #submit-form-body.open { max-height: 700px; }
+        /* 商品卡片 */
+        .product-card {
+            position: relative; overflow: hidden;
+            border-radius: 16px; background: #1E1F21;
+            cursor: pointer; transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .product-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .product-card img { width: 100%; aspect-ratio: 1; object-fit: cover; transition: transform 0.4s; }
+        .product-card:hover img { transform: scale(1.06); }
+        /* 音频波纹动画 */
+        @keyframes ripple {
+            0%   { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+        .playing-ripple::after {
+            content: ''; position: absolute; inset: -6px;
+            border: 2px solid #00FFD9; border-radius: 50%;
+            animation: ripple 1.4s ease-out infinite;
+        }
+        /* hint 双击提示 */
+        .dblclick-hint {
+            position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,255,217,0.12); border: 1px solid rgba(0,255,217,0.3);
+            color: #00FFD9; font-size: 0.72rem; padding: 3px 10px; border-radius: 20px;
+            z-index: 3; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+        }
+        .cat-panel.active .dblclick-hint { opacity: 1; }
+        /* 歌单行 */
+        .song-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 10px; border-radius: 10px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .song-row:hover { background: rgba(0,255,217,0.06); }
+        .song-row.playing-row { background: rgba(0,255,217,0.1); }
+        .song-row .play-icon { width: 36px; height: 36px; flex-shrink: 0; }
     </style>
 </head>
 <body class="bg-dark text-white overflow-x-hidden">
@@ -43,8 +149,8 @@
     <!-- 导航栏 -->
     <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="#hero" class="text-2xl font-bold">PARA</a>
-            <div class="hidden md:flex space-x-8">
+            <a href="#hero" class="text-2xl font-bold tracking-widest">PARA</a>
+            <div class="hidden md:flex space-x-8 text-sm">
                 <a href="#hero" class="hover:text-primary transition-colors">首页</a>
                 <a href="#good-music" class="hover:text-primary transition-colors">好音乐</a>
                 <a href="#merchandise" class="hover:text-primary transition-colors">好周边</a>
@@ -53,248 +159,320 @@
             <button id="menu-toggle" class="md:hidden text-2xl"><i class="fa fa-bars"></i></button>
         </div>
         <div id="mobile-menu" class="hidden md:hidden bg-glass-light">
-            <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
-                <a href="#hero" class="hover:text-primary transition-colors">首页</a>
-                <a href="#good-music" class="hover:text-primary transition-colors">好音乐</a>
-                <a href="#merchandise" class="hover:text-primary transition-colors">好周边</a>
-                <a href="#community" class="hover:text-primary transition-colors">乐迷互动</a>
+            <div class="container mx-auto px-4 py-4 flex flex-col space-y-4 text-sm">
+                <a href="#hero">首页</a>
+                <a href="#good-music">好音乐</a>
+                <a href="#merchandise">好周边</a>
+                <a href="#community">乐迷互动</a>
             </div>
         </div>
     </nav>
 
-    <!-- 英雄区域 -->
-    <section id="hero" class="relative min-h-screen overflow-hidden">
-        <div class="absolute inset-0 z-0"><div class="absolute inset-0 bg-dark"></div></div>
-        <div class="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4 text-white">选择你的音乐风格</h1>
-            <p class="text-xl text-gray-400">点击任意风格开始探索</p>
-        </div>
-        <div class="relative h-screen w-full flex z-10">
-            <div class="music-style w-1/4 h-full overflow-hidden cursor-pointer relative" data-style="rock" data-audio="rock-audio">
-                <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-70 z-10"></div>
-                <img src="https://p3-doubao-search-sign.byteimg.com/labis/image/6efdf124bdde2e59f9079f7eb237f334~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=nfEJfRaW1AfyqxA00v5rSOrZQoo%3D" alt="摇滚" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
-                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-center">
-                    <h2 class="text-3xl font-bold text-white text-shadow-lg">摇滚</h2>
-                    <p class="text-gray-300 mt-2">激情与力量</p>
-                </div>
-                <audio id="rock-audio" loop><source src="#" type="audio/mpeg"></audio>
-            </div>
-            <div class="music-style w-1/4 h-full overflow-hidden cursor-pointer relative" data-style="jazz" data-audio="jazz-audio">
-                <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-70 z-10"></div>
-                <img src="https://p3-doubao-search-sign.byteimg.com/labis/image/6d5f0e335958189f4be29819ba24208e~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=CBDqCeWNX5IMB1DI1xpBiDd04C0%3D" alt="爵士" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
-                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-center">
-                    <h2 class="text-3xl font-bold text-white text-shadow-lg">爵士</h2>
-                    <p class="text-gray-300 mt-2">优雅与即兴</p>
-                </div>
-                <audio id="jazz-audio" loop><source src="#" type="audio/mpeg"></audio>
-            </div>
-            <div class="music-style w-1/4 h-full overflow-hidden cursor-pointer relative" data-style="electronic" data-audio="electronic-audio">
-                <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-70 z-10"></div>
-                <img src="https://p11-doubao-search-sign.byteimg.com/labis/image/7872edec50fcefb635a0a48f40255234~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=cwMxWJt242YDXHvqB3szX2YdUVQ%3D" alt="电子" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
-                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-center">
-                    <h2 class="text-3xl font-bold text-white text-shadow-lg">电子</h2>
-                    <p class="text-gray-300 mt-2">节奏与创新</p>
-                </div>
-                <audio id="electronic-audio" loop><source src="#" type="audio/mpeg"></audio>
-            </div>
-            <div class="music-style w-1/4 h-full overflow-hidden cursor-pointer relative" data-style="folk" data-audio="folk-audio">
-                <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-70 z-10"></div>
-                <img src="https://p26-doubao-search-sign.byteimg.com/labis/6b868ebe8984a751202204e4bfda55fe~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=IUelIS3CZ4%2FXyoSmPtDxP%2F0c1zQ%3D" alt="民谣" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
-                <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-center">
-                    <h2 class="text-3xl font-bold text-white text-shadow-lg">民谣</h2>
-                    <p class="text-gray-300 mt-2">故事与情感</p>
-                </div>
-                <audio id="folk-audio" loop><source src="#" type="audio/mpeg"></audio>
+    <!-- ===== 英雄分类区 ===== -->
+    <section id="hero" class="relative h-screen flex overflow-hidden">
+        <!-- 分类面板 -->
+        <div class="cat-panel" data-cat="摇滚" data-color="#ff3b30">
+            <img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?w=900&q=80" alt="摇滚">
+            <div class="overlay"></div>
+            <div class="dblclick-hint">双击查看歌单</div>
+            <div class="cat-info">
+                <div class="cat-name">摇滚</div>
+                <div class="cat-desc">激情与力量</div>
             </div>
         </div>
-        <div id="music-controls" class="hidden fixed bottom-10 left-1/2 transform -translate-x-1/2 z-30 bg-glass rounded-full px-8 py-4 flex items-center gap-6">
-            <button id="pause-btn" class="w-12 h-12 rounded-full bg-primary text-dark flex items-center justify-center text-xl"><i class="fa fa-pause"></i></button>
-            <button id="next-btn" class="w-10 h-10 rounded-full bg-dark-lighter text-white flex items-center justify-center"><i class="fa fa-step-forward"></i></button>
-            <button id="close-btn" class="w-10 h-10 rounded-full bg-dark-lighter text-white flex items-center justify-center"><i class="fa fa-times"></i></button>
+        <div class="cat-panel" data-cat="爵士" data-color="#ff9500">
+            <img src="https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=900&q=80" alt="爵士">
+            <div class="overlay"></div>
+            <div class="dblclick-hint">双击查看歌单</div>
+            <div class="cat-info">
+                <div class="cat-name">爵士</div>
+                <div class="cat-desc">优雅与即兴</div>
+            </div>
         </div>
-        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
-            <a href="#good-music" class="text-primary text-2xl"><i class="fa fa-chevron-down"></i></a>
+        <div class="cat-panel" data-cat="电子" data-color="#007aff">
+            <img src="https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=900&q=80" alt="电子">
+            <div class="overlay"></div>
+            <div class="dblclick-hint">双击查看歌单</div>
+            <div class="cat-info">
+                <div class="cat-name">电子</div>
+                <div class="cat-desc">节奏与创新</div>
+            </div>
+        </div>
+        <div class="cat-panel" data-cat="民谣" data-color="#34c759">
+            <img src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=900&q=80" alt="民谣">
+            <div class="overlay"></div>
+            <div class="dblclick-hint">双击查看歌单</div>
+            <div class="cat-info">
+                <div class="cat-name">民谣</div>
+                <div class="cat-desc">故事与情感</div>
+            </div>
+        </div>
+        <div class="cat-panel" data-cat="流行" data-color="#bf5af2">
+            <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=900&q=80" alt="流行">
+            <div class="overlay"></div>
+            <div class="dblclick-hint">双击查看歌单</div>
+            <div class="cat-info">
+                <div class="cat-name">流行</div>
+                <div class="cat-desc">旋律与共鸣</div>
+            </div>
+        </div>
+
+        <!-- 向下箭头 -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce z-20 pb-2" id="hero-arrow">
+            <a href="#good-music" class="text-white text-opacity-40 text-2xl"><i class="fa fa-chevron-down"></i></a>
         </div>
     </section>
 
-    <!-- 好音乐区域 -->
-    <section id="good-music" class="py-20 relative">
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-gradient-to-b from-dark to-dark-light"></div>
-        </div>
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">好音乐</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">来自乐迷的推荐，经过精选发布。你也可以提交你喜欢的音乐。</p>
+    <!-- ===== 底部播放控制栏 ===== -->
+    <div id="player-bar">
+        <div class="max-w-3xl mx-auto">
+            <!-- 进度条 -->
+            <div id="progress-bar" class="w-full h-1 bg-gray-800 rounded-full mb-3 relative">
+                <div id="progress-fill" class="h-full bg-primary rounded-full" style="width:0%"></div>
+                <div id="progress-thumb" class="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full -ml-1.5 shadow" style="left:0%"></div>
             </div>
-
-            <!-- 音乐轮播 -->
-            <div class="relative mb-16">
-                <div id="music-carousel" class="overflow-hidden rounded-2xl">
-                    <div id="carousel-track" class="flex transition-transform duration-500 ease-in-out">
-                        <!-- 轮播内容由JS动态生成 -->
-                    </div>
+            <div class="flex items-center gap-4">
+                <!-- 封面/分类色块 -->
+                <div id="player-thumb" class="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center text-dark font-bold text-sm" style="background:#00FFD9">
+                    <i class="fa fa-music"></i>
                 </div>
-                <!-- 轮播空状态 -->
-                <div id="carousel-empty" class="hidden text-center py-16 bg-glass rounded-2xl">
-                    <i class="fa fa-music text-5xl text-gray-600 mb-4"></i>
-                    <p class="text-gray-400">还没有已发布的音乐，快来投稿第一首吧！</p>
+                <!-- 曲目信息 -->
+                <div class="flex-1 min-w-0">
+                    <div id="player-title" class="font-bold text-sm truncate">-</div>
+                    <div id="player-artist" class="text-xs text-gray-400 truncate">-</div>
                 </div>
-                <!-- 轮播控制 -->
-                <button id="carousel-prev" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-glass rounded-full flex items-center justify-center hover:bg-primary hover:text-dark transition-all z-10">
-                    <i class="fa fa-chevron-left"></i>
-                </button>
-                <button id="carousel-next" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-glass rounded-full flex items-center justify-center hover:bg-primary hover:text-dark transition-all z-10">
-                    <i class="fa fa-chevron-right"></i>
-                </button>
-                <!-- 轮播指示点 -->
-                <div id="carousel-dots" class="flex justify-center gap-2 mt-4"></div>
-            </div>
-
-            <!-- 投稿表单 -->
-            <div class="max-w-xl mx-auto bg-glass rounded-2xl p-8">
-                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-                    <i class="fa fa-paper-plane text-primary"></i>
-                    推荐一首好音乐
-                </h3>
-                <div id="submit-success" class="hidden mb-4 p-4 bg-primary bg-opacity-20 border border-primary rounded-lg text-primary text-sm">
-                    <i class="fa fa-check-circle mr-2"></i>提交成功！等待审核后发布。你的ID：<span id="user-id-display"></span>
+                <!-- 时间 -->
+                <div class="text-xs text-gray-500 flex-shrink-0">
+                    <span id="time-current">0:00</span> / <span id="time-total">0:00</span>
                 </div>
-                <div id="submit-error" class="hidden mb-4 p-4 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400 text-sm"></div>
-                <form id="music-submit-form" class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">歌名 *</label>
-                        <input type="text" id="song-name" required placeholder="请输入歌曲名称"
-                            class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">歌手/乐队 *</label>
-                        <input type="text" id="artist" required placeholder="请输入歌手或乐队名"
-                            class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">音乐风格 *</label>
-                        <select id="category" required
-                            class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors">
-                            <option value="">请选择风格</option>
-                            <option value="摇滚">摇滚</option>
-                            <option value="爵士">爵士</option>
-                            <option value="电子">电子</option>
-                            <option value="民谣">民谣</option>
-                            <option value="流行">流行</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">网易云/QQ音乐链接 *</label>
-                        <input type="url" id="music-link" required placeholder="https://..."
-                            class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors">
-                    </div>
-                    <button type="submit" id="submit-btn"
-                        class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                        <i class="fa fa-paper-plane"></i>
-                        <span>提交推荐</span>
+                <!-- 控制按钮 -->
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <button id="btn-prev" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-step-backward"></i>
                     </button>
-                </form>
+                    <button id="btn-play" class="w-10 h-10 rounded-full bg-primary text-dark flex items-center justify-center hover:bg-opacity-80 transition-all relative playing-ripple">
+                        <i class="fa fa-pause" id="btn-play-icon"></i>
+                    </button>
+                    <button id="btn-next" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                        <i class="fa fa-step-forward"></i>
+                    </button>
+                    <button id="btn-close" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-white transition-colors ml-2">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 歌单列表弹窗 ===== -->
+    <div id="song-list-modal">
+        <div id="song-list-inner">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 id="modal-title" class="text-xl font-bold"></h3>
+                    <p id="modal-count" class="text-sm text-gray-400 mt-1"></p>
+                </div>
+                <button id="modal-close" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i class="fa fa-times text-lg"></i>
+                </button>
+            </div>
+            <div id="modal-song-list" class="space-y-1"></div>
+            <div id="modal-empty" class="hidden text-center py-12 text-gray-500">
+                <i class="fa fa-music text-3xl mb-3 block"></i>
+                还没有这个分类的音乐，快去投稿吧！
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 好音乐区域 ===== -->
+    <section id="good-music" class="py-20 relative bg-dark-light">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-5xl font-bold mb-3">好音乐</h2>
+                <p class="text-gray-400">来自乐迷的推荐，经过精选发布</p>
+            </div>
+
+            <!-- 分类标签导航 -->
+            <div class="flex flex-wrap justify-center gap-3 mb-10" id="cat-tabs">
+                <button class="cat-tab px-5 py-2 rounded-full text-sm font-bold bg-primary text-dark" data-cat="all">全部</button>
+                <button class="cat-tab px-5 py-2 rounded-full text-sm bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all" data-cat="摇滚">摇滚</button>
+                <button class="cat-tab px-5 py-2 rounded-full text-sm bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all" data-cat="爵士">爵士</button>
+                <button class="cat-tab px-5 py-2 rounded-full text-sm bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all" data-cat="电子">电子</button>
+                <button class="cat-tab px-5 py-2 rounded-full text-sm bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all" data-cat="民谣">民谣</button>
+                <button class="cat-tab px-5 py-2 rounded-full text-sm bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all" data-cat="流行">流行</button>
+            </div>
+
+            <!-- 音乐列表 -->
+            <div id="music-list-section" class="max-w-3xl mx-auto space-y-3 mb-10">
+                <div class="text-center py-10 text-gray-500" id="music-loading">
+                    <i class="fa fa-spinner fa-spin text-2xl"></i>
+                </div>
+                <div class="hidden text-center py-10 text-gray-500" id="music-empty">
+                    还没有已发布的音乐，快去投稿第一首吧！
+                </div>
+            </div>
+
+            <!-- 投稿入口（可折叠） -->
+            <div class="max-w-xl mx-auto">
+                <button id="submit-toggle" class="w-full flex items-center justify-between px-6 py-4 bg-dark-lighter rounded-xl hover:bg-opacity-80 transition-all group">
+                    <span class="flex items-center gap-2 font-bold">
+                        <i class="fa fa-paper-plane text-primary"></i>
+                        推荐一首好音乐
+                    </span>
+                    <i class="fa fa-chevron-down text-gray-400 transition-transform group-[.open]:rotate-180" id="submit-chevron"></i>
+                </button>
+                <div id="submit-form-body">
+                    <div class="bg-dark-lighter rounded-b-xl px-6 pb-6 pt-4 border-t border-gray-700">
+                        <div id="submit-success" class="hidden mb-4 p-3 bg-primary bg-opacity-10 border border-primary rounded-lg text-primary text-sm">
+                            <i class="fa fa-check-circle mr-2"></i>提交成功！等待审核后发布。你的ID：<span id="user-id-display" class="font-mono"></span>
+                        </div>
+                        <div id="submit-error" class="hidden mb-4 p-3 bg-red-500 bg-opacity-10 border border-red-500 rounded-lg text-red-400 text-sm"></div>
+                        <form id="music-submit-form" class="space-y-3 mt-2">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">歌名 *</label>
+                                    <input type="text" id="song-name" required placeholder="歌曲名称"
+                                        class="w-full bg-dark border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-primary transition-colors">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-400 mb-1">歌手/乐队 *</label>
+                                    <input type="text" id="artist" required placeholder="歌手名"
+                                        class="w-full bg-dark border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-primary transition-colors">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">音乐风格 *</label>
+                                <select id="category" required
+                                    class="w-full bg-dark border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-primary transition-colors">
+                                    <option value="">请选择</option>
+                                    <option value="摇滚">摇滚</option>
+                                    <option value="爵士">爵士</option>
+                                    <option value="电子">电子</option>
+                                    <option value="民谣">民谣</option>
+                                    <option value="流行">流行</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                            </div>
+                            <!-- 上传音频（优先）或填写链接（备选） -->
+                            <div class="border border-dashed border-gray-700 rounded-lg p-4">
+                                <p class="text-xs text-gray-400 mb-3 font-bold">音乐来源（二选一）</p>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">① 上传音频文件（直接在线播放）</label>
+                                        <label class="flex items-center gap-2 px-3 py-2 bg-dark border border-gray-700 rounded-lg cursor-pointer hover:border-primary transition-colors">
+                                            <i class="fa fa-upload text-primary text-sm"></i>
+                                            <span id="audio-file-label" class="text-sm text-gray-500">点击选择 MP3 / WAV / M4A 文件</span>
+                                            <input type="file" id="audio-file" accept="audio/*" class="hidden">
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 mb-1">② 网易云 / QQ音乐链接（跳转外链）</label>
+                                        <input type="url" id="music-link" placeholder="https://music.163.com/..."
+                                            class="w-full bg-dark border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-primary transition-colors">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="upload-progress" class="hidden">
+                                <div class="flex justify-between text-xs text-gray-400 mb-1">
+                                    <span>上传中...</span><span id="upload-pct">0%</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-gray-800 rounded-full">
+                                    <div id="upload-bar" class="h-full bg-primary rounded-full transition-all" style="width:0%"></div>
+                                </div>
+                            </div>
+                            <button type="submit" id="submit-btn"
+                                class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2 text-sm">
+                                <i class="fa fa-paper-plane"></i>提交推荐
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- 好周边区域 -->
-    <section id="merchandise" class="py-20 relative">
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-gradient-to-b from-dark-light to-dark"></div>
-        </div>
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">好周边</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">精选优质周边，点击商品跳转购买。</p>
+    <!-- ===== 好周边区域 ===== -->
+    <section id="merchandise" class="py-20 bg-dark">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-5xl font-bold mb-3">好周边</h2>
+                <p class="text-gray-400">精选优质周边，点击跳转购买</p>
             </div>
-            <!-- 商品网格 -->
-            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                <!-- 动态加载 -->
+            <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-5">
+                <div class="col-span-full text-center py-12 text-gray-500" id="products-loading">
+                    <i class="fa fa-spinner fa-spin text-2xl"></i>
+                </div>
             </div>
-            <!-- 空状态 -->
-            <div id="products-empty" class="hidden text-center py-16">
-                <i class="fa fa-shopping-bag text-5xl text-gray-600 mb-4"></i>
-                <p class="text-gray-400">商品即将上架，敬请期待！</p>
-            </div>
-            <!-- 加载中 -->
-            <div id="products-loading" class="text-center py-16">
-                <i class="fa fa-spinner fa-spin text-3xl text-primary"></i>
+            <div id="products-empty" class="hidden text-center py-16 text-gray-500">
+                <i class="fa fa-shopping-bag text-4xl mb-3 block"></i>商品即将上架，敬请期待！
             </div>
         </div>
     </section>
 
-    <!-- 乐迷互动区域 -->
-    <section id="community" class="py-20 relative">
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-gradient-to-b from-dark to-dark-light"></div>
-        </div>
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">乐迷互动</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">加入音乐社区，留下你的感受。</p>
+    <!-- ===== 乐迷互动区域 ===== -->
+    <section id="community" class="py-20 bg-dark-light">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-5xl font-bold mb-3">乐迷互动</h2>
+                <p class="text-gray-400">加入音乐社区，留下你的感受</p>
             </div>
             <div class="max-w-2xl mx-auto">
-                <div id="comments-container" class="space-y-6">
-                    <div class="bg-glass rounded-lg p-6">
-                        <div class="flex justify-between items-start mb-4">
+                <div id="comments-container" class="space-y-5">
+                    <div class="bg-glass-light rounded-xl p-5">
+                        <div class="flex justify-between items-start mb-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-primary text-dark flex items-center justify-center font-bold">G</div>
-                                <div><h4 class="font-bold">Grace</h4><p class="text-sm text-gray-400">2025-05-01</p></div>
+                                <div class="w-9 h-9 rounded-full bg-primary text-dark flex items-center justify-center font-bold text-sm">G</div>
+                                <div><h4 class="font-bold text-sm">Grace</h4><p class="text-xs text-gray-500">2025-05-01</p></div>
                             </div>
-                            <div class="text-gray-400"><i class="fa fa-heart"></i> 24</div>
+                            <div class="text-gray-500 text-sm"><i class="fa fa-heart"></i> 24</div>
                         </div>
-                        <p class="text-gray-300">你的音乐真的很棒！特别是那首《Midnight Train》，每次听都能让我感受到强烈的情感共鸣。</p>
+                        <p class="text-gray-300 text-sm">每次听都能感受到强烈的情感共鸣，这里推荐的音乐真的太精准了！</p>
                     </div>
-                    <div class="bg-glass rounded-lg p-6">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="bg-glass-light rounded-xl p-5">
+                        <div class="flex justify-between items-start mb-3">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-secondary text-dark flex items-center justify-center font-bold">S</div>
-                                <div><h4 class="font-bold">Stephanie</h4><p class="text-sm text-gray-400">2024-09-28</p></div>
+                                <div class="w-9 h-9 rounded-full bg-secondary text-dark flex items-center justify-center font-bold text-sm">S</div>
+                                <div><h4 class="font-bold text-sm">Stephanie</h4><p class="text-xs text-gray-500">2025-04-28</p></div>
                             </div>
-                            <div class="text-gray-400"><i class="fa fa-heart"></i> 18</div>
+                            <div class="text-gray-500 text-sm"><i class="fa fa-heart"></i> 18</div>
                         </div>
-                        <p class="text-gray-300">新专辑《Hometown Hero》太赞了！每首歌都有独特的风格，已经循环了一周了！</p>
+                        <p class="text-gray-300 text-sm">好周边的品质也很在线，T恤面料超舒服，已经复购两件了！</p>
                     </div>
                 </div>
                 <div class="text-center mt-8">
-                    <button id="load-more-comments" class="px-6 py-2 gradient-border rounded-full hover:bg-opacity-20 transition-all">加载更多</button>
+                    <button id="load-more-comments" class="px-6 py-2 border border-gray-700 rounded-full text-sm hover:border-primary hover:text-primary transition-all">加载更多</button>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- 页脚 -->
-    <footer class="bg-dark py-12 border-t border-gray-800">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                <a href="#hero" class="text-2xl font-bold mb-4 md:mb-0">PARA</a>
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-spotify text-xl"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-youtube-play text-xl"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-instagram text-xl"></i></a>
-                </div>
+    <footer class="bg-dark py-10 border-t border-gray-800">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <a href="#hero" class="text-2xl font-bold tracking-widest">PARA</a>
+            <div class="flex space-x-5">
+                <a href="#" class="text-gray-600 hover:text-primary transition-colors"><i class="fa fa-spotify text-xl"></i></a>
+                <a href="#" class="text-gray-600 hover:text-primary transition-colors"><i class="fa fa-youtube-play text-xl"></i></a>
+                <a href="#" class="text-gray-600 hover:text-primary transition-colors"><i class="fa fa-instagram text-xl"></i></a>
             </div>
-            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400 mb-4 md:mb-0">© 2025 PARA. 保留所有权利。</p>
-                <!-- 隐藏管理后台入口 -->
-                <a href="admin.html" class="text-gray-800 hover:text-gray-700 text-xs transition-colors">·</a>
-            </div>
+            <p class="text-gray-700 text-sm">© 2025 PARA. 保留所有权利。</p>
+        </div>
+        <div class="text-center mt-4">
+            <a href="admin.html" class="text-dark hover:text-gray-900 text-xs transition-colors select-none">·</a>
         </div>
     </footer>
 
-    <!-- 管理员登录弹窗（从页脚隐藏入口进入admin.html） -->
+    <!-- ===== 隐藏 audio 元素 ===== -->
+    <audio id="main-audio" preload="metadata"></audio>
 
     <script>
-    // Supabase 初始化
+    // ===== Supabase =====
     const SUPABASE_URL = 'https://lpncumrthrbzritjutxr.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwbmN1bXJ0aHJienJpdGp1dHhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzg1NjEsImV4cCI6MjA5MzcxNDU2MX0.yH4s9HESL5sVjdeEZ6kJPq8uvIHtZsMS8rVcpKFHD1Q';
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 生成或获取用户流水ID
+    // ===== 用户流水ID =====
     function getUserId() {
         let uid = localStorage.getItem('para_uid');
         if (!uid) {
@@ -304,108 +482,373 @@
         return uid;
     }
 
-    // ===== 好音乐 - 轮播 =====
-    let carouselData = [];
-    let carouselIndex = 0;
-    let carouselTimer = null;
+    // ===== 分类颜色 =====
+    const CAT_COLORS = {
+        '摇滚': '#ff3b30', '爵士': '#ff9500', '电子': '#007aff',
+        '民谣': '#34c759', '流行': '#bf5af2', '其他': '#00FFD9'
+    };
 
-    async function loadMusicCarousel() {
+    // ===== 全局音乐数据缓存 =====
+    let allApprovedMusic = [];
+    let currentPlaylist = [];   // 当前播放列表
+    let currentTrackIdx = 0;
+    const audio = document.getElementById('main-audio');
+
+    // ===== 加载所有已审核音乐 =====
+    async function loadAllMusic() {
         const { data, error } = await db
             .from('music_submissions')
             .select('*')
             .eq('status', 'approved')
             .order('created_at', { ascending: false });
+        allApprovedMusic = (error || !data) ? [] : data;
+        renderMusicList('all');
+    }
 
-        if (error || !data || data.length === 0) {
-            document.getElementById('carousel-empty').classList.remove('hidden');
-            document.getElementById('music-carousel').classList.add('hidden');
-            document.getElementById('carousel-prev').classList.add('hidden');
-            document.getElementById('carousel-next').classList.add('hidden');
-            return;
+    // ===== 渲染音乐列表（好音乐区域） =====
+    function renderMusicList(cat) {
+        const container = document.getElementById('music-list-section');
+        const loadingEl = document.getElementById('music-loading');
+        const emptyEl = document.getElementById('music-empty');
+        loadingEl.classList.add('hidden');
+
+        const list = cat === 'all' ? allApprovedMusic : allApprovedMusic.filter(m => m.category === cat);
+
+        // 清除旧行（保留 loading 和 empty）
+        container.querySelectorAll('.music-row').forEach(el => el.remove());
+
+        if (list.length === 0) { emptyEl.classList.remove('hidden'); return; }
+        emptyEl.classList.add('hidden');
+
+        list.forEach((item, idx) => {
+            const row = document.createElement('div');
+            row.className = 'music-row flex items-center gap-4 p-4 rounded-xl bg-dark-lighter hover:bg-opacity-80 cursor-pointer transition-all group';
+            row.dataset.idx = idx;
+            const color = CAT_COLORS[item.category] || '#00FFD9';
+            const hasAudio = !!item.audio_url;
+            row.innerHTML = `
+                <div class="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center text-dark font-bold text-xs" style="background:${color}">
+                    <i class="fa fa-music"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="font-bold text-sm truncate">${item.song_name}</div>
+                    <div class="text-xs text-gray-400 truncate">${item.artist} · <span class="text-xs" style="color:${color}">${item.category}</span></div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    ${hasAudio
+                        ? `<button class="play-this w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style="background:${color}22; color:${color}">
+                               <i class="fa fa-play text-xs"></i>
+                           </button>`
+                        : ''
+                    }
+                    ${item.music_link
+                        ? `<a href="${item.music_link}" target="_blank" rel="noopener"
+                               class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                               onclick="event.stopPropagation()" title="跳转外链">
+                               <i class="fa fa-external-link text-xs"></i>
+                           </a>`
+                        : ''
+                    }
+                </div>
+            `;
+            // 点击整行播放（仅有audio_url时）
+            if (hasAudio) {
+                row.addEventListener('click', () => {
+                    playSongFromList(list, idx);
+                });
+            }
+            container.appendChild(row);
+        });
+    }
+
+    // ===== 分类Tab =====
+    document.querySelectorAll('.cat-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.cat-tab').forEach(t => {
+                t.classList.remove('bg-primary', 'text-dark');
+                t.classList.add('bg-dark-lighter', 'text-white');
+            });
+            this.classList.add('bg-primary', 'text-dark');
+            this.classList.remove('bg-dark-lighter', 'text-white');
+            renderMusicList(this.dataset.cat);
+        });
+    });
+
+    // ===== 英雄区分类面板交互 =====
+    const panels = document.querySelectorAll('.cat-panel');
+    let activePanel = null;
+    let clickTimer = null;
+
+    panels.forEach(panel => {
+        panel.addEventListener('click', function(e) {
+            const cat = this.dataset.cat;
+            // 双击检测
+            if (clickTimer) {
+                clearTimeout(clickTimer);
+                clickTimer = null;
+                openSongListModal(cat);
+                return;
+            }
+            clickTimer = setTimeout(() => {
+                clickTimer = null;
+                // 单击：激活面板 + 播放该分类
+                if (activePanel === this) {
+                    // 再次单击已激活的面板：切换播放/暂停
+                    togglePlayerPlay();
+                    return;
+                }
+                panels.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                activePanel = this;
+                const catMusic = allApprovedMusic.filter(m => m.category === cat && m.audio_url);
+                if (catMusic.length > 0) {
+                    playSongFromList(catMusic, 0);
+                    document.getElementById('hero-arrow').classList.add('hidden');
+                } else {
+                    // 没有该分类音频，仍然激活视觉
+                    showPlayerEmpty(cat);
+                }
+            }, 220);
+        });
+    });
+
+    function showPlayerEmpty(cat) {
+        const bar = document.getElementById('player-bar');
+        document.getElementById('player-title').textContent = cat + ' · 暂无可播放音乐';
+        document.getElementById('player-artist').textContent = '投稿后审核发布即可播放';
+        const color = CAT_COLORS[cat] || '#00FFD9';
+        document.getElementById('player-thumb').style.background = color;
+        bar.classList.add('visible');
+    }
+
+    // ===== 播放器核心 =====
+    function playSongFromList(list, idx) {
+        currentPlaylist = list;
+        currentTrackIdx = idx;
+        loadTrack(list[idx]);
+    }
+
+    function loadTrack(song) {
+        const bar = document.getElementById('player-bar');
+        const color = CAT_COLORS[song.category] || '#00FFD9';
+        document.getElementById('player-title').textContent = song.song_name;
+        document.getElementById('player-artist').textContent = song.artist + ' · ' + song.category;
+        document.getElementById('player-thumb').style.background = color;
+        document.getElementById('progress-fill').style.width = '0%';
+        document.getElementById('progress-thumb').style.left = '0%';
+        document.getElementById('time-current').textContent = '0:00';
+
+        if (song.audio_url) {
+            audio.src = song.audio_url;
+            audio.play().catch(() => {});
+            document.getElementById('btn-play-icon').className = 'fa fa-pause';
+        } else {
+            audio.pause(); audio.src = '';
+            document.getElementById('btn-play-icon').className = 'fa fa-play';
         }
-
-        carouselData = data;
-        renderCarousel();
+        bar.classList.add('visible');
+        // 高亮当前歌单行
+        highlightCurrentRow();
     }
 
-    function renderCarousel() {
-        const track = document.getElementById('carousel-track');
-        const dots = document.getElementById('carousel-dots');
-        track.innerHTML = '';
-        dots.innerHTML = '';
-
-        const categoryColors = {
-            '摇滚': 'from-red-900', '爵士': 'from-yellow-900', '电子': 'from-blue-900',
-            '民谣': 'from-green-900', '流行': 'from-purple-900', '其他': 'from-gray-900'
-        };
-
-        carouselData.forEach((item, i) => {
-            const color = categoryColors[item.category] || 'from-gray-900';
-            const slide = document.createElement('div');
-            slide.className = 'min-w-full';
-            slide.innerHTML = `
-                <div class="bg-gradient-to-r ${color} to-dark-light rounded-2xl p-10 md:p-16 flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-32 h-32 md:w-48 md:h-48 rounded-2xl bg-dark-lighter flex items-center justify-center flex-shrink-0 shadow-2xl">
-                        <i class="fa fa-music text-5xl md:text-7xl text-primary"></i>
-                    </div>
-                    <div class="text-center md:text-left">
-                        <span class="inline-block px-3 py-1 bg-primary bg-opacity-20 text-primary rounded-full text-sm mb-3">${item.category}</span>
-                        <h3 class="text-3xl md:text-4xl font-bold mb-2">${item.song_name}</h3>
-                        <p class="text-xl text-gray-300 mb-4">${item.artist}</p>
-                        <p class="text-xs text-gray-500 mb-6">by ${item.user_id}</p>
-                        <a href="${item.music_link}" target="_blank" rel="noopener"
-                            class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all">
-                            <i class="fa fa-headphones"></i> 去听这首歌
-                        </a>
-                    </div>
-                </div>`;
-            track.appendChild(slide);
-
-            const dot = document.createElement('button');
-            dot.className = `w-2 h-2 rounded-full transition-all ${i === 0 ? 'bg-primary w-6' : 'bg-gray-600'}`;
-            dot.addEventListener('click', () => goToSlide(i));
-            dots.appendChild(dot);
-        });
-
-        goToSlide(0);
-        startCarouselTimer();
-    }
-
-    function goToSlide(index) {
-        carouselIndex = (index + carouselData.length) % carouselData.length;
-        document.getElementById('carousel-track').style.transform = `translateX(-${carouselIndex * 100}%)`;
-        document.querySelectorAll('#carousel-dots button').forEach((dot, i) => {
-            dot.className = `rounded-full transition-all ${i === carouselIndex ? 'bg-primary w-6 h-2' : 'bg-gray-600 w-2 h-2'}`;
+    function highlightCurrentRow() {
+        document.querySelectorAll('.music-row').forEach(r => r.classList.remove('playing-row', 'border-l-2'));
+        const rows = document.querySelectorAll('.music-row');
+        const cur = currentPlaylist[currentTrackIdx];
+        rows.forEach(r => {
+            const idx = parseInt(r.dataset.idx);
+            if (currentPlaylist[idx] && currentPlaylist[idx].id === cur.id) {
+                r.classList.add('playing-row');
+            }
         });
     }
 
-    function startCarouselTimer() {
-        if (carouselTimer) clearInterval(carouselTimer);
-        carouselTimer = setInterval(() => goToSlide(carouselIndex + 1), 4000);
+    function togglePlayerPlay() {
+        if (!audio.src) return;
+        if (audio.paused) { audio.play(); document.getElementById('btn-play-icon').className = 'fa fa-pause'; }
+        else { audio.pause(); document.getElementById('btn-play-icon').className = 'fa fa-play'; }
     }
 
-    document.getElementById('carousel-prev').addEventListener('click', () => { goToSlide(carouselIndex - 1); startCarouselTimer(); });
-    document.getElementById('carousel-next').addEventListener('click', () => { goToSlide(carouselIndex + 1); startCarouselTimer(); });
+    document.getElementById('btn-play').addEventListener('click', togglePlayerPlay);
+    document.getElementById('btn-next').addEventListener('click', () => {
+        if (!currentPlaylist.length) return;
+        currentTrackIdx = (currentTrackIdx + 1) % currentPlaylist.length;
+        loadTrack(currentPlaylist[currentTrackIdx]);
+    });
+    document.getElementById('btn-prev').addEventListener('click', () => {
+        if (!currentPlaylist.length) return;
+        currentTrackIdx = (currentTrackIdx - 1 + currentPlaylist.length) % currentPlaylist.length;
+        loadTrack(currentPlaylist[currentTrackIdx]);
+    });
+    document.getElementById('btn-close').addEventListener('click', () => {
+        audio.pause(); audio.src = '';
+        document.getElementById('player-bar').classList.remove('visible');
+        panels.forEach(p => p.classList.remove('active'));
+        activePanel = null;
+        document.getElementById('hero-arrow').classList.remove('hidden');
+    });
 
-    // ===== 好音乐 - 投稿 =====
+    // 音频事件
+    audio.addEventListener('timeupdate', () => {
+        if (!audio.duration) return;
+        const pct = (audio.currentTime / audio.duration) * 100;
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('progress-thumb').style.left = pct + '%';
+        document.getElementById('time-current').textContent = formatTime(audio.currentTime);
+    });
+    audio.addEventListener('loadedmetadata', () => {
+        document.getElementById('time-total').textContent = formatTime(audio.duration);
+    });
+    audio.addEventListener('ended', () => {
+        // 自动下一曲循环
+        if (currentPlaylist.length > 0) {
+            currentTrackIdx = (currentTrackIdx + 1) % currentPlaylist.length;
+            loadTrack(currentPlaylist[currentTrackIdx]);
+        }
+    });
+
+    // 点击进度条跳转
+    document.getElementById('progress-bar').addEventListener('click', function(e) {
+        if (!audio.duration) return;
+        const rect = this.getBoundingClientRect();
+        const pct = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pct * audio.duration;
+    });
+
+    function formatTime(sec) {
+        if (isNaN(sec)) return '0:00';
+        const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+        return m + ':' + String(s).padStart(2, '0');
+    }
+
+    // ===== 歌单列表弹窗 =====
+    function openSongListModal(cat) {
+        const modal = document.getElementById('song-list-modal');
+        const titleEl = document.getElementById('modal-title');
+        const countEl = document.getElementById('modal-count');
+        const listEl = document.getElementById('modal-song-list');
+        const emptyEl = document.getElementById('modal-empty');
+
+        const songs = allApprovedMusic.filter(m => m.category === cat);
+        const color = CAT_COLORS[cat] || '#00FFD9';
+        titleEl.textContent = cat;
+        titleEl.style.color = color;
+        countEl.textContent = songs.length > 0 ? `${songs.length} 首` : '';
+        listEl.innerHTML = '';
+
+        if (songs.length === 0) {
+            emptyEl.classList.remove('hidden');
+        } else {
+            emptyEl.classList.add('hidden');
+            songs.forEach((song, idx) => {
+                const row = document.createElement('div');
+                row.className = 'song-row';
+                const hasAudio = !!song.audio_url;
+                row.innerHTML = `
+                    <div class="play-icon rounded-lg flex items-center justify-center text-dark font-bold text-xs flex-shrink-0" style="background:${color}; width:36px; height:36px;">
+                        ${hasAudio ? '<i class="fa fa-play text-xs"></i>' : '<i class="fa fa-music text-xs"></i>'}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-bold text-sm truncate">${song.song_name}</div>
+                        <div class="text-xs text-gray-400 truncate">${song.artist}</div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        ${song.music_link ? `<a href="${song.music_link}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="text-gray-500 hover:text-primary text-xs transition-colors"><i class="fa fa-external-link"></i></a>` : ''}
+                    </div>
+                `;
+                if (hasAudio) {
+                    row.addEventListener('click', () => {
+                        playSongFromList(songs, idx);
+                        closeModal();
+                        // 同步激活英雄区对应分类
+                        panels.forEach(p => {
+                            p.classList.remove('active');
+                            if (p.dataset.cat === cat) p.classList.add('active');
+                        });
+                    });
+                }
+                listEl.appendChild(row);
+            });
+        }
+        modal.classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('song-list-modal').classList.remove('open');
+    }
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    document.getElementById('song-list-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // ===== 投稿表单折叠 =====
+    const submitToggle = document.getElementById('submit-toggle');
+    const submitFormBody = document.getElementById('submit-form-body');
+    submitToggle.addEventListener('click', () => {
+        const isOpen = submitFormBody.classList.contains('open');
+        submitFormBody.classList.toggle('open');
+        submitToggle.classList.toggle('open');
+        document.getElementById('submit-chevron').style.transform = isOpen ? '' : 'rotate(180deg)';
+    });
+
+    // 音频文件选择提示
+    document.getElementById('audio-file').addEventListener('change', function() {
+        const label = document.getElementById('audio-file-label');
+        label.textContent = this.files[0] ? this.files[0].name : '点击选择 MP3 / WAV / M4A 文件';
+        label.style.color = this.files[0] ? '#00FFD9' : '';
+    });
+
+    // ===== 投稿提交 =====
     document.getElementById('music-submit-form').addEventListener('submit', async function(e) {
         e.preventDefault();
         const btn = document.getElementById('submit-btn');
         const successEl = document.getElementById('submit-success');
         const errorEl = document.getElementById('submit-error');
+        const progressWrap = document.getElementById('upload-progress');
         successEl.classList.add('hidden');
         errorEl.classList.add('hidden');
+
+        const songName = document.getElementById('song-name').value.trim();
+        const artistVal = document.getElementById('artist').value.trim();
+        const catVal = document.getElementById('category').value;
+        const linkVal = document.getElementById('music-link').value.trim();
+        const audioFile = document.getElementById('audio-file').files[0];
+
+        if (!audioFile && !linkVal) {
+            errorEl.textContent = '请上传音频文件或填写音乐链接（二选一）';
+            errorEl.classList.remove('hidden');
+            return;
+        }
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 提交中...';
 
+        let audioUrl = null;
+
+        // 若有音频文件，先上传到 Supabase Storage
+        if (audioFile) {
+            progressWrap.classList.remove('hidden');
+            const filePath = `music/${Date.now()}_${audioFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+            // 使用 XMLHttpRequest 监控进度
+            audioUrl = await uploadAudioWithProgress(audioFile, filePath);
+            progressWrap.classList.add('hidden');
+            if (!audioUrl) {
+                errorEl.textContent = '音频上传失败，请检查网络或文件大小（限50MB）';
+                errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-paper-plane"></i> 提交推荐';
+                return;
+            }
+        }
+
         const userId = getUserId();
         const { error } = await db.from('music_submissions').insert({
             user_id: userId,
-            song_name: document.getElementById('song-name').value.trim(),
-            artist: document.getElementById('artist').value.trim(),
-            category: document.getElementById('category').value,
-            music_link: document.getElementById('music-link').value.trim(),
+            song_name: songName,
+            artist: artistVal,
+            category: catVal,
+            music_link: linkVal || null,
+            audio_url: audioUrl,
             status: 'pending'
         });
 
@@ -419,13 +862,47 @@
             document.getElementById('user-id-display').textContent = userId;
             successEl.classList.remove('hidden');
             this.reset();
+            document.getElementById('audio-file-label').textContent = '点击选择 MP3 / WAV / M4A 文件';
+            document.getElementById('audio-file-label').style.color = '';
         }
     });
 
-    // ===== 好周边 - 从数据库加载 =====
+    async function uploadAudioWithProgress(file, path) {
+        return new Promise((resolve) => {
+            const bar = document.getElementById('upload-bar');
+            const pct = document.getElementById('upload-pct');
+            // 使用 Supabase Storage API 上传
+            const bucketName = 'para-audio';
+            const url = `${SUPABASE_URL}/storage/v1/object/${bucketName}/${path}`;
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + SUPABASE_KEY);
+            xhr.setRequestHeader('x-upsert', 'true');
+            xhr.setRequestHeader('Content-Type', file.type || 'audio/mpeg');
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const p = Math.round(e.loaded / e.total * 100);
+                    bar.style.width = p + '%';
+                    pct.textContent = p + '%';
+                }
+            };
+            xhr.onload = () => {
+                if (xhr.status === 200 || xhr.status === 201) {
+                    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucketName}/${path}`;
+                    resolve(publicUrl);
+                } else {
+                    resolve(null);
+                }
+            };
+            xhr.onerror = () => resolve(null);
+            xhr.send(file);
+        });
+    }
+
+    // ===== 好周边 =====
     async function loadProducts() {
-        const loading = document.getElementById('products-loading');
         const grid = document.getElementById('products-grid');
+        const loading = document.getElementById('products-loading');
         const empty = document.getElementById('products-empty');
 
         const { data, error } = await db
@@ -435,150 +912,90 @@
             .order('sort_order', { ascending: true });
 
         loading.classList.add('hidden');
-
-        if (error || !data || data.length === 0) {
-            empty.classList.remove('hidden');
-            return;
-        }
+        if (error || !data || data.length === 0) { empty.classList.remove('hidden'); return; }
 
         grid.innerHTML = '';
-        data.forEach(product => {
-            const shopLabel = product.shop_type === 'taobao' ? '淘宝' : product.shop_type === '1688' ? '1688' : '购买';
-            const card = document.createElement('div');
-            card.className = 'bg-glass rounded-lg overflow-hidden group cursor-pointer';
+        data.forEach(p => {
+            const shopLabel = { taobao: '淘宝', '1688': '1688' }[p.shop_type] || '购买';
+            const shopColor = { taobao: '#ff4400', '1688': '#e8320c' }[p.shop_type] || '#00FFD9';
+            const card = document.createElement('a');
+            card.href = p.shop_link;
+            card.target = '_blank';
+            card.rel = 'noopener';
+            card.className = 'product-card block';
             card.innerHTML = `
-                <a href="${product.shop_link}" target="_blank" rel="noopener" class="block">
-                    <div class="relative aspect-square overflow-hidden bg-dark-lighter">
-                        ${product.image_url
-                            ? `<img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">`
-                            : `<div class="w-full h-full flex items-center justify-center"><i class="fa fa-shopping-bag text-5xl text-gray-600"></i></div>`
-                        }
+                <div class="overflow-hidden aspect-square">
+                    ${p.image_url
+                        ? `<img src="${p.image_url}" alt="${p.name}" loading="lazy">`
+                        : `<div class="w-full h-full bg-dark-lighter flex items-center justify-center"><i class="fa fa-shopping-bag text-4xl text-gray-700"></i></div>`
+                    }
+                </div>
+                <div class="p-4">
+                    <h3 class="font-bold text-sm mb-1 truncate">${p.name}</h3>
+                    ${p.description ? `<p class="text-gray-500 text-xs mb-2 truncate">${p.description}</p>` : ''}
+                    <div class="flex items-center justify-between">
+                        ${p.price ? `<span class="text-primary font-bold">¥${p.price}</span>` : '<span class="text-gray-500 text-xs">价格面议</span>'}
+                        <span class="text-xs px-2 py-1 rounded-full font-bold" style="background:${shopColor}22; color:${shopColor}">${shopLabel}</span>
                     </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">${product.name}</h3>
-                        ${product.description ? `<p class="text-gray-400 text-sm mb-3">${product.description}</p>` : ''}
-                        <div class="flex justify-between items-center">
-                            ${product.price ? `<span class="text-primary font-bold text-xl">¥${product.price}</span>` : '<span class="text-gray-400">价格面议</span>'}
-                            <span class="px-4 py-2 bg-primary text-dark font-bold rounded-full text-sm hover:bg-opacity-80 transition-all">
-                                <i class="fa fa-external-link mr-1"></i>${shopLabel}
-                            </span>
-                        </div>
-                    </div>
-                </a>`;
+                </div>`;
             grid.appendChild(card);
         });
     }
 
     // ===== 加载更多留言 =====
-    const loadMoreComments = document.getElementById('load-more-comments');
-    const commentsContainer = document.getElementById('comments-container');
     let commentsLoaded = 2;
-    if (loadMoreComments) {
-        loadMoreComments.addEventListener('click', () => {
-            loadMoreComments.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 加载中...';
-            setTimeout(() => {
-                const names = ['陈静', '杨光', '周婷', '吴宇', '郑华'];
-                const comments = ['你的音乐给了我很多灵感！', '期待下一张专辑！', '现场太精彩了！', '音乐帮我度过了很多困难时刻。', '旋律和歌词都很打动我。'];
-                for (let i = 0; i < 2; i++) {
-                    const el = document.createElement('div');
-                    el.className = 'bg-glass rounded-lg p-6';
-                    const name = names[Math.floor(Math.random() * names.length)];
-                    const comment = comments[Math.floor(Math.random() * comments.length)];
-                    const d = new Date(Date.now() - Math.floor(Math.random() * 30 * 86400000));
-                    el.innerHTML = `<div class="flex justify-between items-start mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-secondary text-dark flex items-center justify-center font-bold">${name[0]}</div><div><h4 class="font-bold">${name}</h4><p class="text-sm text-gray-400">${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}</p></div></div><div class="text-gray-400"><i class="fa fa-heart"></i> ${Math.floor(Math.random()*50)}</div></div><p class="text-gray-300">${comment}</p>`;
-                    commentsContainer.appendChild(el);
-                }
-                commentsLoaded += 2;
-                loadMoreComments.innerHTML = commentsLoaded >= 8 ? '没有更多了' : '加载更多';
-                if (commentsLoaded >= 8) { loadMoreComments.disabled = true; loadMoreComments.classList.add('opacity-50', 'cursor-not-allowed'); }
-            }, 800);
+    document.getElementById('load-more-comments').addEventListener('click', function() {
+        this.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+        setTimeout(() => {
+            const names = ['陈静', '杨光', '周婷', '吴宇', '郑华', '林小美'];
+            const comments = ['这里推荐的音乐每首都是宝藏！', '期待更多分类的音乐！', '周边质量很在线，已经买了好几件。', '音乐帮我度过了很多困难时刻。', '旋律和歌词都很打动我。', '发现了好多从没听过的好歌！'];
+            const avatarColors = ['#00FFD9', '#9DF654', '#75CFFF', '#ff9500', '#bf5af2', '#ff3b30'];
+            for (let i = 0; i < 2; i++) {
+                const el = document.createElement('div');
+                el.className = 'bg-glass-light rounded-xl p-5';
+                const nameIdx = Math.floor(Math.random() * names.length);
+                const name = names[nameIdx];
+                const comment = comments[nameIdx];
+                const color = avatarColors[Math.floor(Math.random() * avatarColors.length)];
+                const d = new Date(Date.now() - Math.floor(Math.random() * 60 * 86400000));
+                el.innerHTML = `<div class="flex justify-between items-start mb-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-dark text-sm" style="background:${color}">${name[0]}</div><div><h4 class="font-bold text-sm">${name}</h4><p class="text-xs text-gray-500">${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}</p></div></div><div class="text-gray-500 text-sm"><i class="fa fa-heart"></i> ${Math.floor(Math.random()*50)}</div></div><p class="text-gray-300 text-sm">${comment}</p>`;
+                document.getElementById('comments-container').appendChild(el);
+            }
+            commentsLoaded += 2;
+            this.innerHTML = commentsLoaded >= 8 ? '没有更多了' : '加载更多';
+            if (commentsLoaded >= 8) { this.disabled = true; this.classList.add('opacity-50', 'cursor-not-allowed'); }
+        }, 600);
+    });
+
+    // ===== 导航栏 =====
+    window.addEventListener('scroll', () => {
+        document.getElementById('navbar').style.background = window.scrollY > 50 ? 'rgba(21,22,23,0.92)' : 'transparent';
+        document.getElementById('navbar').style.backdropFilter = window.scrollY > 50 ? 'blur(12px)' : 'none';
+    });
+
+    // 移动端菜单
+    document.getElementById('menu-toggle').addEventListener('click', () => {
+        const menu = document.getElementById('mobile-menu');
+        menu.classList.toggle('hidden');
+    });
+
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href === '#') return;
+            e.preventDefault();
+            document.getElementById('mobile-menu').classList.add('hidden');
+            const t = document.querySelector(href);
+            if (t) window.scrollTo({ top: t.offsetTop - 72, behavior: 'smooth' });
         });
-    }
+    });
 
-    // ===== 英雄区域音乐交互 =====
-    document.addEventListener('DOMContentLoaded', function() {
-        const musicStyles = {
-            rock: { name: '摇滚', description: '激情与力量', color: 'rgba(255,59,48,0.8)' },
-            jazz: { name: '爵士', description: '优雅与即兴', color: 'rgba(255,149,0,0.8)' },
-            electronic: { name: '电子', description: '节奏与创新', color: 'rgba(0,122,255,0.8)' },
-            folk: { name: '民谣', description: '故事与情感', color: 'rgba(52,199,89,0.8)' }
-        };
-        let currentAudio = null, currentStyle = null;
-        const styleElements = document.querySelectorAll('.music-style');
-        const musicControls = document.getElementById('music-controls');
-        const pauseBtn = document.getElementById('pause-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const closeBtn = document.getElementById('close-btn');
-        const titleEl = document.querySelector('#hero h1');
-        const subtitleEl = document.querySelector('#hero p');
-        const audioSamples = {
-            'rock-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-            'jazz-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-            'electronic-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-            'folk-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'
-        };
-        Object.keys(audioSamples).forEach(id => { const a = document.getElementById(id); if (a) a.src = audioSamples[id]; });
-
-        styleElements.forEach(el => {
-            el.addEventListener('click', function() {
-                const style = this.dataset.style, audioId = this.dataset.audio;
-                if (currentStyle === style) { togglePlay(); return; }
-                if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-                styleElements.forEach(e => { e.style.flex='1'; e.querySelector('img').style.filter='grayscale(100%)'; });
-                this.style.flex = '2';
-                this.querySelector('img').style.filter = 'grayscale(0%)';
-                currentAudio = document.getElementById(audioId);
-                currentStyle = style;
-                if (currentAudio) currentAudio.play().catch(()=>{});
-                pauseBtn.innerHTML = '<i class="fa fa-pause"></i>';
-                const sd = musicStyles[style];
-                titleEl.textContent = sd.name; subtitleEl.textContent = sd.description; titleEl.style.color = sd.color;
-                musicControls.classList.remove('hidden');
-            });
-        });
-
-        pauseBtn.addEventListener('click', togglePlay);
-        nextBtn.addEventListener('click', () => {
-            const styles = Object.keys(musicStyles);
-            document.querySelector(`[data-style="${styles[(styles.indexOf(currentStyle)+1)%styles.length]}"]`).click();
-        });
-        closeBtn.addEventListener('click', () => {
-            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
-            styleElements.forEach(e => { e.style.flex='1'; e.querySelector('img').style.filter=''; });
-            musicControls.classList.add('hidden');
-            titleEl.textContent = '选择你的音乐风格'; titleEl.style.color = 'white';
-            subtitleEl.textContent = '点击任意风格开始探索'; currentStyle = null;
-        });
-        function togglePlay() {
-            if (!currentAudio) return;
-            if (currentAudio.paused) { currentAudio.play(); pauseBtn.innerHTML = '<i class="fa fa-pause"></i>'; }
-            else { currentAudio.pause(); pauseBtn.innerHTML = '<i class="fa fa-play"></i>'; }
-        }
-
-        // 导航栏滚动
-        window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('bg-glass', window.scrollY > 50); });
-
-        // 移动端菜单
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-            menuToggle.innerHTML = mobileMenu.classList.contains('hidden') ? '<i class="fa fa-bars"></i>' : '<i class="fa fa-times"></i>';
-        });
-
-        // 平滑滚动
-        document.querySelectorAll('a[href^="#"]').forEach(a => {
-            a.addEventListener('click', function(e) {
-                e.preventDefault();
-                mobileMenu.classList.add('hidden'); menuToggle.innerHTML = '<i class="fa fa-bars"></i>';
-                const t = document.querySelector(this.getAttribute('href'));
-                if (t) window.scrollTo({ top: t.offsetTop - 80, behavior: 'smooth' });
-            });
-        });
-
-        // 初始化数据
-        loadMusicCarousel();
+    // ===== 初始化 =====
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAllMusic();
         loadProducts();
     });
     </script>
-</body></html>
+</body>
+</html>
