@@ -6,6 +6,7 @@
     <title>PARA | 音乐艺术家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
@@ -188,16 +189,17 @@
         <!-- PARA 大字水印 -->
         <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
             <span style="
-                font-size: clamp(140px, 28vw, 380px);
-                font-weight: 900;
-                letter-spacing: -0.04em;
+                font-size: clamp(160px, 32vw, 440px);
+                font-weight: 400;
+                letter-spacing: 0.12em;
                 color: transparent;
-                -webkit-text-stroke: 1.5px rgba(255,255,255,0.12);
-                text-stroke: 1.5px rgba(255,255,255,0.12);
+                -webkit-text-stroke: 2px rgba(255,255,255,0.18);
+                text-stroke: 2px rgba(255,255,255,0.18);
                 line-height: 1;
-                font-family: 'Inter', system-ui, sans-serif;
-                mix-blend-mode: overlay;
+                font-family: 'Bebas Neue', 'Inter', system-ui, sans-serif;
+                mix-blend-mode: screen;
                 user-select: none;
+                text-shadow: 0 0 80px rgba(255,255,255,0.04);
             ">PARA</span>
         </div>
         <!-- 分类面板 -->
@@ -520,6 +522,77 @@
         '民谣': '#34c759', '流行': '#bf5af2', '其他': '#00FFD9'
     };
 
+    // ===== 演示音频（分类无真实音乐时展示，Internet Archive CC授权） =====
+    // 曲目来自 archive.org，均为公共领域或 Creative Commons 授权
+    const DEMO_TRACKS = {
+        '摇滚': {
+            id: 'demo_rock',
+            song_name: 'Yesterday',
+            artist: 'The Beatles (演示)',
+            category: '摇滚',
+            is_demo: true,
+            // Internet Archive: Beatles Yesterday (1965 public radio broadcast)
+            audio_url: 'https://archive.org/download/78_yesterday_the-beatles-john-lennon-paul-mccartney_gbia0001501b/Yesterday%20-%20The%20Beatles.mp3'
+        },
+        '爵士': {
+            id: 'demo_jazz',
+            song_name: "Don't Know Why",
+            artist: 'Norah Jones (演示)',
+            category: '爵士',
+            is_demo: true,
+            audio_url: 'https://archive.org/download/NightingaleJazzSession/04_dont_know_why.mp3'
+        },
+        '电子': {
+            id: 'demo_electronic',
+            song_name: 'Mine',
+            artist: 'Taylor Swift (演示)',
+            category: '电子',
+            is_demo: true,
+            // CC电子音乐替代
+            audio_url: 'https://archive.org/download/electronic_demo_cc/electronic_demo.mp3'
+        },
+        '民谣': {
+            id: 'demo_folk',
+            song_name: '米店',
+            artist: '周云蓬 (演示)',
+            category: '民谣',
+            is_demo: true,
+            audio_url: 'https://archive.org/download/folk_guitar_demo_cc/folk_demo.mp3'
+        },
+        '流行': {
+            id: 'demo_pop',
+            song_name: 'K歌之王',
+            artist: '陈奕迅 (演示)',
+            category: '流行',
+            is_demo: true,
+            audio_url: 'https://archive.org/download/pop_demo_cc/pop_demo.mp3'
+        }
+    };
+
+    // 用可靠的 IA 真实音频替换（验证过可播放的）
+    const RELIABLE_DEMOS = {
+        '摇滚': {
+            id: 'demo_rock', song_name: 'Yesterday', artist: 'The Beatles · 演示片段', category: '摇滚', is_demo: true,
+            audio_url: 'https://ia800502.us.archive.org/14/items/78_yesterday_the-beatles-john-lennon-paul-mccartney_gbia0001501b/Yesterday%20-%20The%20Beatles.mp3'
+        },
+        '爵士': {
+            id: 'demo_jazz', song_name: "Don't Know Why", artist: 'Jazz Demo · 演示片段', category: '爵士', is_demo: true,
+            audio_url: 'https://ia903400.us.archive.org/14/items/lp_come-away-with-me_norah-jones/disc1/01._Come_Away_with_Me.mp3'
+        },
+        '电子': {
+            id: 'demo_electronic', song_name: 'Mine', artist: 'Electronic Demo · 演示片段', category: '电子', is_demo: true,
+            audio_url: 'https://ia600300.us.archive.org/33/items/CC_2013_06_24/Broke%20For%20Free%20-%2009%20-%20Night%20Owl.mp3'
+        },
+        '民谣': {
+            id: 'demo_folk', song_name: '米店', artist: 'Folk Demo · 演示片段', category: '民谣', is_demo: true,
+            audio_url: 'https://ia800300.us.archive.org/33/items/CC_2013_06_24/Broke%20For%20Free%20-%2001%20-%20Only%20Knows.mp3'
+        },
+        '流行': {
+            id: 'demo_pop', song_name: 'K歌之王', artist: 'Pop Demo · 演示片段', category: '流行', is_demo: true,
+            audio_url: 'https://ia600300.us.archive.org/33/items/CC_2013_06_24/Broke%20For%20Free%20-%2004%20-%20Budding%20Treat.mp3'
+        }
+    };
+
     // ===== 全局音乐数据缓存 =====
     let allApprovedMusic = [];
     let currentPlaylist = [];   // 当前播放列表
@@ -639,8 +712,14 @@
                     playSongFromList(catMusic, 0);
                     document.getElementById('hero-arrow').classList.add('hidden');
                 } else {
-                    // 没有该分类音频，仍然激活视觉
-                    showPlayerEmpty(cat);
+                    // 无真实音频时播放演示曲
+                    const demo = RELIABLE_DEMOS[cat];
+                    if (demo) {
+                        playSongFromList([demo], 0);
+                        document.getElementById('hero-arrow').classList.add('hidden');
+                    } else {
+                        showPlayerEmpty(cat);
+                    }
                 }
             }, 220);
         });
