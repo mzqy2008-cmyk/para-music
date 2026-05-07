@@ -35,6 +35,12 @@
         }
     </style>
     <style>
+        /* 英雄面板容器 */
+        .hero-panels {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
         /* 分类卡片展开动画 */
         .cat-panel {
             flex: 1;
@@ -46,10 +52,19 @@
         .cat-panel.active { flex: 3; }
         .cat-panel img {
             width: 100%; height: 100%; object-fit: cover;
-            transition: filter 0.4s, transform 0.4s;
-            filter: grayscale(60%) brightness(0.7);
+            transition: filter 0.5s, transform 0.5s;
+            filter: grayscale(100%) brightness(0.5);
         }
-        .cat-panel.active img, .cat-panel:hover img {
+        /* 有激活面板时，未激活的保持黑白 */
+        .has-active .cat-panel:not(.active) img {
+            filter: grayscale(100%) brightness(0.35);
+        }
+        .cat-panel.active img {
+            filter: grayscale(0%) brightness(0.88);
+            transform: scale(1.05);
+        }
+        /* 无激活状态时 hover 彩色 */
+        .hero-panels:not(.has-active) .cat-panel:hover img {
             filter: grayscale(0%) brightness(0.85);
             transform: scale(1.04);
         }
@@ -170,7 +185,23 @@
 
     <!-- ===== 英雄分类区 ===== -->
     <section id="hero" class="relative h-screen flex overflow-hidden">
+        <!-- PARA 大字水印 -->
+        <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
+            <span style="
+                font-size: clamp(140px, 28vw, 380px);
+                font-weight: 900;
+                letter-spacing: -0.04em;
+                color: transparent;
+                -webkit-text-stroke: 1.5px rgba(255,255,255,0.12);
+                text-stroke: 1.5px rgba(255,255,255,0.12);
+                line-height: 1;
+                font-family: 'Inter', system-ui, sans-serif;
+                mix-blend-mode: overlay;
+                user-select: none;
+            ">PARA</span>
+        </div>
         <!-- 分类面板 -->
+        <div id="hero-panels" class="hero-panels flex w-full h-full">
         <div class="cat-panel" data-cat="摇滚" data-color="#ff3b30">
             <img src="https://images.unsplash.com/photo-1598387993281-cecf8b71a8f8?w=900&q=80" alt="摇滚">
             <div class="overlay"></div>
@@ -216,6 +247,7 @@
                 <div class="cat-desc">旋律与共鸣</div>
             </div>
         </div>
+        </div><!-- end hero-panels -->
 
         <!-- 向下箭头 -->
         <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce z-20 pb-2" id="hero-arrow">
@@ -576,6 +608,7 @@
 
     // ===== 英雄区分类面板交互 =====
     const panels = document.querySelectorAll('.cat-panel');
+    const heroPanels = document.getElementById('hero-panels');
     let activePanel = null;
     let clickTimer = null;
 
@@ -600,6 +633,7 @@
                 panels.forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
                 activePanel = this;
+                heroPanels.classList.add('has-active');
                 const catMusic = allApprovedMusic.filter(m => m.category === cat && m.audio_url);
                 if (catMusic.length > 0) {
                     playSongFromList(catMusic, 0);
@@ -684,6 +718,7 @@
         audio.pause(); audio.src = '';
         document.getElementById('player-bar').classList.remove('visible');
         panels.forEach(p => p.classList.remove('active'));
+        heroPanels.classList.remove('has-active');
         activePanel = null;
         document.getElementById('hero-arrow').classList.remove('hidden');
     });
