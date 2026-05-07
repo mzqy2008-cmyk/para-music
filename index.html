@@ -188,19 +188,35 @@
     <section id="hero" class="relative h-screen flex overflow-hidden">
         <!-- PARA 大字水印 -->
         <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none select-none">
-            <span style="
-                font-size: clamp(160px, 32vw, 440px);
-                font-weight: 400;
-                letter-spacing: 0.12em;
-                color: transparent;
-                -webkit-text-stroke: 2px rgba(255,255,255,0.18);
-                text-stroke: 2px rgba(255,255,255,0.18);
-                line-height: 1;
-                font-family: 'Bebas Neue', 'Inter', system-ui, sans-serif;
+            <svg viewBox="0 0 820 200" style="
+                width: clamp(420px, 72vw, 960px);
+                height: auto;
+                opacity: 0.18;
                 mix-blend-mode: screen;
-                user-select: none;
-                text-shadow: 0 0 80px rgba(255,255,255,0.04);
-            ">PARA</span>
+                overflow: visible;
+            " fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- P -->
+                <text x="0" y="188"
+                    font-family="'Bebas Neue', 'Impact', sans-serif"
+                    font-size="200"
+                    letter-spacing="8"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="3"
+                >P</text>
+                <!-- A (无横撑) —— 用路径手绘 -->
+                <path d="M 192 188 L 280 0 L 368 188" stroke="white" stroke-width="3" stroke-linejoin="round" fill="none"/>
+                <!-- R -->
+                <text x="362" y="188"
+                    font-family="'Bebas Neue', 'Impact', sans-serif"
+                    font-size="200"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="3"
+                >R</text>
+                <!-- A (无横撑) -->
+                <path d="M 548 188 L 636 0 L 724 188" stroke="white" stroke-width="3" stroke-linejoin="round" fill="none"/>
+            </svg>
         </div>
         <!-- 分类面板 -->
         <div id="hero-panels" class="hero-panels flex w-full h-full">
