@@ -1,17 +1,10 @@
 <html lang="zh-CN"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音乐艺术家 | 个人品牌展示</title>
-    <!-- Tailwind CSS v3 -->
+    <title>PARA | 音乐艺术家</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-    <!-- GSAP for animations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/SplitText.min.js"></script>
-    <!-- 统一的 Tailwind 配置 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -23,623 +16,251 @@
                         dark: '#151617',
                         'dark-light': '#1E1F21',
                         'dark-lighter': '#33353A',
-                        
                     },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        }
-                    }
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
                 }
             }
         }
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-shadow {
-                text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-            }
-            .text-shadow-lg {
-                text-shadow: 0 0 15px rgba(0, 255, 255, 0.9), 0 0 30px rgba(0, 255, 255, 0.5);
-            }
-            .bg-glass {
-                background: rgba(43, 45, 47, 0.8);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-            }
-            .bg-glass-light {
-                background: rgba(43, 45, 47, 0.8);
-                backdrop-filter: blur(8px);
-                -webkit-backdrop-filter: blur(8px);
-            }
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
-            }
-            .scrollbar-hide {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-            }
-            .gradient-text {
-                background-clip: text;
-                -webkit-background-clip: text;
-                color: transparent;
-                background-image: linear-gradient(90deg, #151617, #151617);
-            }
+            .text-shadow { text-shadow: 0 0 10px rgba(0,255,255,0.7); }
+            .text-shadow-lg { text-shadow: 0 0 15px rgba(0,255,255,0.9), 0 0 30px rgba(0,255,255,0.5); }
+            .bg-glass { background: rgba(43,45,47,0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+            .bg-glass-light { background: rgba(43,45,47,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
+            .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
             .gradient-border {
-                position: relative;
-                border: double 1px transparent;
-                background-image: linear-gradient(#151617, #151617), 
-                                  linear-gradient(0deg, #00FFD9, #00FFD9);
-                background-origin: border-box;
-                background-clip: padding-box, border-box;
-            }
-            .animate-wave {
-                animation: wave 10s linear infinite;
-            }
-            @keyframes wave {
-                0% {
-                    background-position: 0% 50%;
-                }
-                50% {
-                    background-position: 100% 50%;
-                }
-                100% {
-                    background-position: 0% 50%;
-                }
+                position: relative; border: double 1px transparent;
+                background-image: linear-gradient(#151617, #151617), linear-gradient(0deg, #00FFD9, #00FFD9);
+                background-origin: border-box; background-clip: padding-box, border-box;
             }
         }
     </style>
 </head>
 <body class="bg-dark text-white overflow-x-hidden">
+
     <!-- 导航栏 -->
     <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#hero" class="text-2xl font-bold">PARA</a>
-            
-            <!-- 桌面导航 -->
             <div class="hidden md:flex space-x-8">
                 <a href="#hero" class="hover:text-primary transition-colors">首页</a>
-                <a href="#merchandise" class="hover:text-primary transition-colors">周边好物</a>
+                <a href="#good-music" class="hover:text-primary transition-colors">好音乐</a>
+                <a href="#merchandise" class="hover:text-primary transition-colors">好周边</a>
                 <a href="#community" class="hover:text-primary transition-colors">乐迷互动</a>
             </div>
-            
-            <!-- 移动端菜单按钮 -->
-            <button id="menu-toggle" class="md:hidden text-2xl">
-                <i class="fa fa-bars"></i>
-            </button>
+            <button id="menu-toggle" class="md:hidden text-2xl"><i class="fa fa-bars"></i></button>
         </div>
-        
-        <!-- 移动端导航菜单 -->
         <div id="mobile-menu" class="hidden md:hidden bg-glass-light">
             <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
                 <a href="#hero" class="hover:text-primary transition-colors">首页</a>
-                <a href="#merchandise" class="hover:text-primary transition-colors">周边好物</a>
+                <a href="#good-music" class="hover:text-primary transition-colors">好音乐</a>
+                <a href="#merchandise" class="hover:text-primary transition-colors">好周边</a>
                 <a href="#community" class="hover:text-primary transition-colors">乐迷互动</a>
             </div>
         </div>
     </nav>
 
-    <!-- 英雄区域 - 音乐风格选择 -->
+    <!-- 英雄区域 -->
     <section id="hero" class="relative min-h-screen overflow-hidden">
-        <!-- 背景效果 -->
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-dark"></div>
-        </div>
-        
-        <!-- 音乐风格标题 -->
+        <div class="absolute inset-0 z-0"><div class="absolute inset-0 bg-dark"></div></div>
         <div class="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 text-center">
             <h1 class="text-4xl md:text-6xl font-bold mb-4 text-white">选择你的音乐风格</h1>
             <p class="text-xl text-gray-400">点击任意风格开始探索</p>
         </div>
-        
-        <!-- 音乐风格图片网格 -->
         <div class="relative h-screen w-full flex z-10">
-            <!-- 摇滚音乐 -->
             <div class="music-style w-1/4 h-full overflow-hidden cursor-pointer relative" data-style="rock" data-audio="rock-audio">
                 <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-70 z-10"></div>
-                <img src="https://p3-doubao-search-sign.byteimg.com/labis/image/6efdf124bdde2e59f9079f7eb237f334~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=nfEJfRaW1AfyqxA00v5rSOrZQoo%3D" alt="摇滚音乐" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
+                <img src="https://p3-doubao-search-sign.byteimg.com/labis/image/6efdf124bdde2e59f9079f7eb237f334~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=nfEJfRaW1AfyqxA00v5rSOrZQoo%3D" alt="摇滚" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
                 <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-center">
                     <h2 class="text-3xl font-bold text-white text-shadow-lg">摇滚</h2>
                     <p class="text-gray-300 mt-2">激情与力量</p>
                 </div>
-                <audio id="rock-audio" loop>
-                    <source src="#" type="audio/mpeg">
-                </audio>
+                <audio id="rock-audio" loop><source src="#" type="audio/mpeg"></audio>
             </div>
-            
-            <!-- 爵士音乐 -->
             <div class="music-style w-1/4 h-full overflow-hidden cursor-pointer relative" data-style="jazz" data-audio="jazz-audio">
                 <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-70 z-10"></div>
-                <img src="https://p3-doubao-search-sign.byteimg.com/labis/image/6d5f0e335958189f4be29819ba24208e~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=CBDqCeWNX5IMB1DI1xpBiDd04C0%3D" alt="爵士音乐" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
+                <img src="https://p3-doubao-search-sign.byteimg.com/labis/image/6d5f0e335958189f4be29819ba24208e~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=CBDqCeWNX5IMB1DI1xpBiDd04C0%3D" alt="爵士" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
                 <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-center">
                     <h2 class="text-3xl font-bold text-white text-shadow-lg">爵士</h2>
                     <p class="text-gray-300 mt-2">优雅与即兴</p>
                 </div>
-                <audio id="jazz-audio" loop>
-                    <source src="#" type="audio/mpeg">
-                </audio>
+                <audio id="jazz-audio" loop><source src="#" type="audio/mpeg"></audio>
             </div>
-            
-            <!-- 电子音乐 -->
             <div class="music-style w-1/4 h-full overflow-hidden cursor-pointer relative" data-style="electronic" data-audio="electronic-audio">
                 <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-70 z-10"></div>
-                <img src="https://p11-doubao-search-sign.byteimg.com/labis/image/7872edec50fcefb635a0a48f40255234~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=cwMxWJt242YDXHvqB3szX2YdUVQ%3D" alt="电子音乐" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
+                <img src="https://p11-doubao-search-sign.byteimg.com/labis/image/7872edec50fcefb635a0a48f40255234~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=cwMxWJt242YDXHvqB3szX2YdUVQ%3D" alt="电子" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
                 <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-center">
                     <h2 class="text-3xl font-bold text-white text-shadow-lg">电子</h2>
                     <p class="text-gray-300 mt-2">节奏与创新</p>
                 </div>
-                <audio id="electronic-audio" loop>
-                    <source src="#" type="audio/mpeg">
-                </audio>
+                <audio id="electronic-audio" loop><source src="#" type="audio/mpeg"></audio>
             </div>
-            
-            <!-- 民谣音乐 -->
             <div class="music-style w-1/4 h-full overflow-hidden cursor-pointer relative" data-style="folk" data-audio="folk-audio">
                 <div class="absolute inset-0 bg-gradient-to-t from-dark to-transparent opacity-70 z-10"></div>
-                <img src="https://p26-doubao-search-sign.byteimg.com/labis/6b868ebe8984a751202204e4bfda55fe~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=IUelIS3CZ4%2FXyoSmPtDxP%2F0c1zQ%3D" alt="民谣音乐" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
+                <img src="https://p26-doubao-search-sign.byteimg.com/labis/6b868ebe8984a751202204e4bfda55fe~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793630798&x-signature=IUelIS3CZ4%2FXyoSmPtDxP%2F0c1zQ%3D" alt="民谣" class="w-full h-full object-cover transition-transform duration-700 ease-in-out">
                 <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-center">
                     <h2 class="text-3xl font-bold text-white text-shadow-lg">民谣</h2>
                     <p class="text-gray-300 mt-2">故事与情感</p>
                 </div>
-                <audio id="folk-audio" loop>
-                    <source src="#" type="audio/mpeg">
-                </audio>
+                <audio id="folk-audio" loop><source src="#" type="audio/mpeg"></audio>
             </div>
         </div>
-        
-        <!-- 音乐控制按钮 -->
         <div id="music-controls" class="hidden fixed bottom-10 left-1/2 transform -translate-x-1/2 z-30 bg-glass rounded-full px-8 py-4 flex items-center gap-6">
-            <button id="pause-btn" class="w-12 h-12 rounded-full bg-primary text-dark flex items-center justify-center text-xl">
-                <i class="fa fa-pause"></i>
-            </button>
-            <button id="next-btn" class="w-10 h-10 rounded-full bg-dark-lighter text-white flex items-center justify-center">
-                <i class="fa fa-step-forward"></i>
-            </button>
-            <button id="close-btn" class="w-10 h-10 rounded-full bg-dark-lighter text-white flex items-center justify-center">
-                <i class="fa fa-times"></i>
-            </button>
+            <button id="pause-btn" class="w-12 h-12 rounded-full bg-primary text-dark flex items-center justify-center text-xl"><i class="fa fa-pause"></i></button>
+            <button id="next-btn" class="w-10 h-10 rounded-full bg-dark-lighter text-white flex items-center justify-center"><i class="fa fa-step-forward"></i></button>
+            <button id="close-btn" class="w-10 h-10 rounded-full bg-dark-lighter text-white flex items-center justify-center"><i class="fa fa-times"></i></button>
         </div>
-        
-        <!-- 向下滚动指示 -->
         <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
-            <a href="#music" class="text-primary text-2xl">
-                <i class="fa fa-chevron-down"></i>
-            </a>
+            <a href="#good-music" class="text-primary text-2xl"><i class="fa fa-chevron-down"></i></a>
         </div>
     </section>
 
-    <!-- 周边好物区域 -->
-    <section id="merchandise" class="py-20 relative">
-        <!-- 背景效果 -->
+    <!-- 好音乐区域 -->
+    <section id="good-music" class="py-20 relative">
         <div class="absolute inset-0 z-0">
-            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/ea74ebf0c5b742d0bbb5658087e3eaa5~tplv-a9rns2rl98-image.image?rcl=20250917111150E5475872AC1CC0D06872&amp;rk3s=8e244e95&amp;rrcfp=f06b921b&amp;x-expires=1760670764&amp;x-signature=%2FDJwiGqhuYb54aeRJVE2GdKGi0Q%3D" alt="音乐波形背景" class="w-full h-full object-cover opacity-20">
             <div class="absolute inset-0 bg-gradient-to-b from-dark to-dark-light"></div>
         </div>
-        
         <div class="container mx-auto px-4 relative z-10">
             <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">周边好物</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">
-                    探索我的官方周边商品，包括T恤、卫衣、帽子等，展示你对音乐的热爱。
-                </p>
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">好音乐</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">来自乐迷的推荐，经过精选发布。你也可以提交你喜欢的音乐。</p>
             </div>
-            
-            <!-- 商品分类标签 -->
-            <div class="flex flex-wrap justify-center gap-4 mb-12">
-                <button class="category-btn px-6 py-2 rounded-full bg-primary text-dark font-bold">全部商品</button>
-                <button class="category-btn px-6 py-2 rounded-full bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all">T恤</button>
-                <button class="category-btn px-6 py-2 rounded-full bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all">卫衣</button>
-                <button class="category-btn px-6 py-2 rounded-full bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all">帽子</button>
-                <button class="category-btn px-6 py-2 rounded-full bg-dark-lighter text-white hover:bg-primary hover:text-dark transition-all">其他</button>
-            </div>
-            
-            <!-- 商品网格 -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                <!-- 商品1 - T恤 -->
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative aspect-square overflow-hidden">
-                        <img src="https://p3-doubao-search-sign.byteimg.com/labis/2f28a499bca60fecfb477969ac67ac6d~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793631902&x-signature=10XSBTkKmxpB%2FmJvHfA%2Bbf85SOc%3D" alt="摇滚T恤" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">
-                        <div class="absolute top-4 right-4 bg-primary text-dark font-bold px-3 py-1 rounded-full text-sm">
-                            新品
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">摇滚标志T恤</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-primary font-bold text-xl">¥199</span>
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1"><i class="fa fa-star"></i></span>
-                                <span class="text-gray-400">4.9 (128)</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">S</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">M</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">L</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XL</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XXL</span>
-                        </div>
-                        <button class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span>加入购物车</span>
-                        </button>
+
+            <!-- 音乐轮播 -->
+            <div class="relative mb-16">
+                <div id="music-carousel" class="overflow-hidden rounded-2xl">
+                    <div id="carousel-track" class="flex transition-transform duration-500 ease-in-out">
+                        <!-- 轮播内容由JS动态生成 -->
                     </div>
                 </div>
-                
-                <!-- 商品2 - T恤 -->
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative aspect-square overflow-hidden">
-                        <img src="https://p26-doubao-search-sign.byteimg.com/labis/76862624184853c1b8da1e0ecb6fa65b~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793631902&x-signature=b%2BNzV7Iv%2FiqxMLfP2rGQ9Z0dtbo%3D" alt="乐队T恤" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">经典乐队T恤</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-primary font-bold text-xl">¥179</span>
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1"><i class="fa fa-star"></i></span>
-                                <span class="text-gray-400">4.7 (96)</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">S</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">M</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">L</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XL</span>
-                        </div>
-                        <button class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span>加入购物车</span>
-                        </button>
-                    </div>
+                <!-- 轮播空状态 -->
+                <div id="carousel-empty" class="hidden text-center py-16 bg-glass rounded-2xl">
+                    <i class="fa fa-music text-5xl text-gray-600 mb-4"></i>
+                    <p class="text-gray-400">还没有已发布的音乐，快来投稿第一首吧！</p>
                 </div>
-                
-                <!-- 商品3 - 卫衣 -->
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative aspect-square overflow-hidden">
-                        <img src="https://p26-doubao-search-sign.byteimg.com/labis/38549ce984a07ca7db5c68334f642584~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793631901&x-signature=fM1WY4R5%2BDhiQKoGsY3TSFE6Bik%3D" alt="披头士卫衣" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">
-                        <div class="absolute top-4 right-4 bg-secondary text-dark font-bold px-3 py-1 rounded-full text-sm">
-                            热销
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">经典乐队卫衣</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-primary font-bold text-xl">¥299</span>
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1"><i class="fa fa-star"></i></span>
-                                <span class="text-gray-400">4.9 (156)</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">M</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">L</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XL</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XXL</span>
-                        </div>
-                        <button class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span>加入购物车</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 商品4 - 卫衣 -->
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative aspect-square overflow-hidden">
-                        <img src="https://p3-doubao-search-sign.byteimg.com/labis/85712a0205a33e62817fcbb88888b564~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793631901&x-signature=fqUsTpHsbJimW7pMUTc46%2BInsQ20%3D" alt="音乐标语卫衣" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">音乐标语卫衣</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-primary font-bold text-xl">¥279</span>
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1"><i class="fa fa-star"></i></span>
-                                <span class="text-gray-400">4.8 (112)</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">S</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">M</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">L</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XL</span>
-                        </div>
-                        <button class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span>加入购物车</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 商品5 - 帽子 -->
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative aspect-square overflow-hidden">
-                        <img src="https://p3-doubao-search-sign.byteimg.com/ecom-shop-material/hcKLOtkH_m_344fb308fda25116aa343bdd99031c0c_sx_282557_www1200-1200~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793631902&x-signature=08Euo7Dxw2T3fKJrYUSEtopuXU4%3D" alt="音乐符号帽子" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">音乐符号棒球帽</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-primary font-bold text-xl">¥129</span>
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1"><i class="fa fa-star"></i></span>
-                                <span class="text-gray-400">4.6 (87)</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">黑色</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">白色</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">蓝色</span>
-                        </div>
-                        <button class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span>加入购物车</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 商品6 - 帽子 -->
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative aspect-square overflow-hidden">
-                        <img src="https://p3-doubao-search-sign.byteimg.com/ecom-shop-material/jpeg_m_a3c14ef0f3d862c50957dede65c00362_sx_69625_www800-800~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793631902&x-signature=XVedKhXAI%2BKPMIDdtEYqoNwHuew%3D" alt="音乐人帽子" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">
-                        <div class="absolute top-4 right-4 bg-accent text-dark font-bold px-3 py-1 rounded-full text-sm">
-                            限量
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">音乐人标志棒球帽</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-primary font-bold text-xl">¥149</span>
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1"><i class="fa fa-star"></i></span>
-                                <span class="text-gray-400">4.8 (65)</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">蓝色</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">黑色</span>
-                        </div>
-                        <button class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span>加入购物车</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 商品7 - T恤 -->
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative aspect-square overflow-hidden">
-                        <img src="https://p3-doubao-search-sign.byteimg.com/labis/2430f7376aa31f782bd595bb287d2a95~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793631902&x-signature=NN9PULmkSHFWC7bX8aDiTARbYfU%3D" alt="重金属T恤" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">重金属乐队T恤</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-primary font-bold text-xl">¥189</span>
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1"><i class="fa fa-star"></i></span>
-                                <span class="text-gray-400">4.7 (78)</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">M</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">L</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XL</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XXL</span>
-                        </div>
-                        <button class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span>加入购物车</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 商品8 - 卫衣 -->
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative aspect-square overflow-hidden">
-                        <img src="https://p11-doubao-search-sign.byteimg.com/labis/93edbe31f3f8dbaabc8cdbb3b5f3f382~tplv-be4g95zd3a-image.jpeg?lk3s=feb11e32&x-expires=1793631901&x-signature=o2DyIhg2CmZxLlyja5xJptWz3Go%3D" alt="摇滚乐队卫衣" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">摇滚乐队连帽卫衣</h3>
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-primary font-bold text-xl">¥329</span>
-                            <div class="flex items-center">
-                                <span class="text-yellow-400 mr-1"><i class="fa fa-star"></i></span>
-                                <span class="text-gray-400">4.6 (92)</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">S</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">M</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">L</span>
-                            <span class="px-2 py-1 bg-dark-lighter rounded text-xs">XL</span>
-                        </div>
-                        <button class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
-                            <i class="fa fa-shopping-cart"></i>
-                            <span>加入购物车</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 加载更多按钮 -->
-            <div class="text-center mt-12">
-                <button class="px-8 py-3 bg-dark-lighter text-white font-bold rounded-full hover:bg-primary hover:text-dark transition-all">
-                    加载更多商品
+                <!-- 轮播控制 -->
+                <button id="carousel-prev" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-glass rounded-full flex items-center justify-center hover:bg-primary hover:text-dark transition-all z-10">
+                    <i class="fa fa-chevron-left"></i>
                 </button>
+                <button id="carousel-next" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-glass rounded-full flex items-center justify-center hover:bg-primary hover:text-dark transition-all z-10">
+                    <i class="fa fa-chevron-right"></i>
+                </button>
+                <!-- 轮播指示点 -->
+                <div id="carousel-dots" class="flex justify-center gap-2 mt-4"></div>
             </div>
-            
-            <!-- 购物车提示 -->
-            <div id="cart-notification" class="fixed bottom-10 right-10 bg-primary text-dark font-bold px-6 py-3 rounded-full shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
-                商品已添加到购物车！
+
+            <!-- 投稿表单 -->
+            <div class="max-w-xl mx-auto bg-glass rounded-2xl p-8">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <i class="fa fa-paper-plane text-primary"></i>
+                    推荐一首好音乐
+                </h3>
+                <div id="submit-success" class="hidden mb-4 p-4 bg-primary bg-opacity-20 border border-primary rounded-lg text-primary text-sm">
+                    <i class="fa fa-check-circle mr-2"></i>提交成功！等待审核后发布。你的ID：<span id="user-id-display"></span>
+                </div>
+                <div id="submit-error" class="hidden mb-4 p-4 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400 text-sm"></div>
+                <form id="music-submit-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">歌名 *</label>
+                        <input type="text" id="song-name" required placeholder="请输入歌曲名称"
+                            class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">歌手/乐队 *</label>
+                        <input type="text" id="artist" required placeholder="请输入歌手或乐队名"
+                            class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">音乐风格 *</label>
+                        <select id="category" required
+                            class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors">
+                            <option value="">请选择风格</option>
+                            <option value="摇滚">摇滚</option>
+                            <option value="爵士">爵士</option>
+                            <option value="电子">电子</option>
+                            <option value="民谣">民谣</option>
+                            <option value="流行">流行</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">网易云/QQ音乐链接 *</label>
+                        <input type="url" id="music-link" required placeholder="https://..."
+                            class="w-full bg-dark-lighter border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors">
+                    </div>
+                    <button type="submit" id="submit-btn"
+                        class="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all flex items-center justify-center gap-2">
+                        <i class="fa fa-paper-plane"></i>
+                        <span>提交推荐</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 好周边区域 -->
+    <section id="merchandise" class="py-20 relative">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-b from-dark-light to-dark"></div>
+        </div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">好周边</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">精选优质周边，点击商品跳转购买。</p>
+            </div>
+            <!-- 商品网格 -->
+            <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- 动态加载 -->
+            </div>
+            <!-- 空状态 -->
+            <div id="products-empty" class="hidden text-center py-16">
+                <i class="fa fa-shopping-bag text-5xl text-gray-600 mb-4"></i>
+                <p class="text-gray-400">商品即将上架，敬请期待！</p>
+            </div>
+            <!-- 加载中 -->
+            <div id="products-loading" class="text-center py-16">
+                <i class="fa fa-spinner fa-spin text-3xl text-primary"></i>
             </div>
         </div>
     </section>
 
     <!-- 乐迷互动区域 -->
     <section id="community" class="py-20 relative">
-        <!-- 背景效果 -->
         <div class="absolute inset-0 z-0">
-            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/ea74ebf0c5b742d0bbb5658087e3eaa5~tplv-a9rns2rl98-image.image?rcl=20250917111150E5475872AC1CC0D06872&amp;rk3s=8e244e95&amp;rrcfp=f06b921b&amp;x-expires=1760670764&amp;x-signature=%2FDJwiGqhuYb54aeRJVE2GdKGi0Q%3D" alt="音乐波形背景" class="w-full h-full object-cover opacity-20">
             <div class="absolute inset-0 bg-gradient-to-b from-dark to-dark-light"></div>
         </div>
-        
         <div class="container mx-auto px-4 relative z-10">
             <div class="text-center mb-16">
                 <h2 class="text-3xl md:text-5xl font-bold mb-4">乐迷互动</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">
-                    加入我的音乐社区，留下你的评论，分享你的感受，与其他乐迷交流。
-                </p>
+                <p class="text-gray-400 max-w-2xl mx-auto">加入音乐社区，留下你的感受。</p>
             </div>
-            
-            <div class="container mx-auto">
-                <!-- 留言板 -->
-                <div class="max-w-2xl mx-auto">
-                    <!-- 留言列表 -->
-                    <div id="comments-container" class="space-y-6">
-                        <!-- 留言1 -->
-                        <div class="bg-glass rounded-lg p-6">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-primary text-dark flex items-center justify-center font-bold">G</div>
-                                    <div>
-                                        <h4 class="font-bold">Grace</h4>
-                                        <p class="text-sm text-gray-400">2025-05-01</p>
-                                    </div>
-                                </div>
-                                <div class="text-gray-400"><i class="fa fa-heart"></i> 24</div>
+            <div class="max-w-2xl mx-auto">
+                <div id="comments-container" class="space-y-6">
+                    <div class="bg-glass rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-primary text-dark flex items-center justify-center font-bold">G</div>
+                                <div><h4 class="font-bold">Grace</h4><p class="text-sm text-gray-400">2025-05-01</p></div>
                             </div>
-                            <p class="text-gray-300">你的音乐真的很棒！特别是那首《Midnight Train》，每次听都能让我感受到强烈的情感共鸣。希望能有机会去看你的现场演出！</p>
+                            <div class="text-gray-400"><i class="fa fa-heart"></i> 24</div>
                         </div>
-                        
-                        <!-- 留言2 -->
-                        <div class="bg-glass rounded-lg p-6">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center font-bold" style="color: rgb(51, 51, 51);">S</div>
-                                    <div>
-                                        <h4 class="font-bold">Stephanie</h4>
-                                        <p class="text-sm text-gray-400">2024-09-28</p>
-                                    </div>
-                                </div>
-                                <div class="text-gray-400"><i class="fa fa-heart"></i> 18</div>
-                            </div>
-                            <p class="text-gray-300">新专辑《Hometown Hero》太赞了！每首歌都有独特的风格，制作也非常精良。已经在我的播放列表里循环了一周了，期待更多新作品！</p>
-                        </div>
-                        
-                        <!-- 留言3 -->
-                        <div class="bg-glass rounded-lg p-6">
-                            <div class="flex justify-between items-start mb-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-accent text-dark flex items-center justify-center font-bold">S</div>
-                                    <div>
-                                        <h4 class="font-bold">山野里的小花儿</h4>
-                                        <p class="text-sm text-gray-400">2024-05-25</p>
-                                    </div>
-                                </div>
-                                <div class="text-gray-400"><i class="fa fa-heart"></i> 12</div>
-                            </div>
-                            <p class="text-gray-300">上周在上海的演出太精彩了！现场氛围超级棒，你的舞台表现力也很强。希望下次能在广州看到你的演出，已经迫不及待了！</p>
-                        </div>
+                        <p class="text-gray-300">你的音乐真的很棒！特别是那首《Midnight Train》，每次听都能让我感受到强烈的情感共鸣。</p>
                     </div>
-                    
-                    <!-- 加载更多按钮 -->
-                    <div class="text-center mt-8">
-                        <button id="load-more-comments" class="px-6 py-2 gradient-border rounded-full hover:bg-opacity-20 transition-all">加载更多</button>
+                    <div class="bg-glass rounded-lg p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-secondary text-dark flex items-center justify-center font-bold">S</div>
+                                <div><h4 class="font-bold">Stephanie</h4><p class="text-sm text-gray-400">2024-09-28</p></div>
+                            </div>
+                            <div class="text-gray-400"><i class="fa fa-heart"></i> 18</div>
+                        </div>
+                        <p class="text-gray-300">新专辑《Hometown Hero》太赞了！每首歌都有独特的风格，已经循环了一周了！</p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 专辑购买区域 -->
-    <section id="store" class="py-20 bg-dark-light relative">
-        <!-- 背景效果 -->
-        <div class="absolute inset-0 z-0">
-            <div class="absolute inset-0 bg-gradient-to-b from-dark-light to-dark"></div>
-        </div>
-        
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-5xl font-bold mb-4">专辑购买</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">购买我的实体专辑和周边商品，支持我的音乐创作。</p>
-            </div>
-            
-            <!-- 专辑商品 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative h-64 overflow-hidden">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/51c9bf1f5eb14e2fadbcf85b6736dfb5~tplv-a9rns2rl98-image.image?rcl=202509171415076FB6943049D6ADD975FA&amp;rk3s=8e244e95&amp;rrcfp=2609e108&amp;x-expires=1758694511&amp;x-signature=HPPfnJst6ekOc0l7wua31xcSd5c%3D" alt="专辑封面" class="w-full h-full object-cover transform transition-transform group-hover:scale-110">
-                        <div class="absolute top-4 right-4 bg-primary text-dark font-bold px-3 py-1 rounded-full text-sm">最新</div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">Hometown Hero (CD)</h3>
-                        <p class="text-gray-400 mb-4">包含12首原创歌曲，精美包装，附赠歌词本和海报。</p>
-                        <div class="flex justify-between items-center">
-                            <p class="font-bold text-xl">¥129</p>
-                            <button class="px-6 py-2 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all">购买</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative h-64 overflow-hidden">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/fc6a622fffca4183b14fbd5b2605f850~tplv-a9rns2rl98-image.image?rcl=2025091715151802DEF7BC6CBA6CDA0E9D&amp;rk3s=8e244e95&amp;rrcfp=2609e108&amp;x-expires=1758698122&amp;x-signature=4R7X%2FRcpDvs%2B7I0IfhpraIvMJYU%3D" alt="专辑封面" class="w-full h-full object-cover transform transition-transform group-hover:scale-110">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">The Dreamer (黑胶唱片)</h3>
-                        <p class="text-gray-400 mb-4">限量版黑胶唱片，高品质音质，精美包装，附赠数字下载码。</p>
-                        <div class="flex justify-between items-center">
-                            <p class="font-bold text-xl">¥299</p>
-                            <button class="px-6 py-2 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all">购买</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-glass rounded-lg overflow-hidden group">
-                    <div class="relative h-64 overflow-hidden">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/4be42912d88c46babd010ace761fdc3e~tplv-a9rns2rl98-image.image?rcl=20250917151336D6D34929B2D0BFBCD012&amp;rk3s=8e244e95&amp;rrcfp=2609e108&amp;x-expires=1758698020&amp;x-signature=lb7nNfwTzSusQCr6lpvwoOThbxc%3D" alt="专辑封面" class="w-full h-full object-cover transform transition-transform group-hover:scale-110">
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">Jazz Covers (T恤)</h3>
-                        <p class="text-gray-400 mb-4">100%纯棉T恤，印有专辑封面图案，多种尺码可选。</p>
-                        <div class="flex justify-between items-center">
-                            <p class="font-bold text-xl">¥159</p>
-                            <button class="px-6 py-2 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all">购买</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 精选套装 -->
-            <div class="bg-glass rounded-lg overflow-hidden">
-                <div class="flex flex-col md:flex-row">
-                    <div class="md:w-1/2 relative h-64 md:h-auto">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/code_assistant/fc6a622fffca4183b14fbd5b2605f850~tplv-a9rns2rl98-image.image?rcl=2025091715151802DEF7BC6CBA6CDA0E9D&amp;rk3s=8e244e95&amp;rrcfp=2609e108&amp;x-expires=1758698122&amp;x-signature=4R7X%2FRcpDvs%2B7I0IfhpraIvMJYU%3D" alt="专辑封面" class="w-full h-full object-cover">
-                        <div class="absolute top-4 left-4 bg-accent text-dark font-bold px-3 py-1 rounded-full text-sm">超值套装</div>
-                    </div>
-                    <div class="md:w-1/2 p-8">
-                        <h4 class="font-bold text-2xl mb-4">音乐收藏套装</h4>
-                        <p class="text-gray-300 mb-6">包含所有三张专辑的CD版本，限量版T恤，定制海报和独家幕后花絮DVD。这是收藏我的音乐作品的最佳方式。</p>
-                        <div class="flex flex-wrap gap-4 mb-6">
-                            <div class="bg-dark-lighter rounded-lg px-3 py-1"><p class="text-sm text-gray-400">3张CD</p></div>
-                            <div class="bg-dark-lighter rounded-lg px-3 py-1"><p class="text-sm text-gray-400">限量T恤</p></div>
-                            <div class="bg-dark-lighter rounded-lg px-3 py-1"><p class="text-sm text-gray-400">海报</p></div>
-                            <div class="bg-dark-lighter rounded-lg px-3 py-1"><p class="text-sm text-gray-400">DVD</p></div>
-                        </div>
-                        <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 line-through">原价: ¥599</p>
-                                <p class="font-bold text-2xl text-accent">¥399</p>
-                            </div>
-                            <button class="px-8 py-3 bg-accent text-dark font-bold rounded-full hover:bg-opacity-80 transition-all">立即购买</button>
-                        </div>
-                    </div>
+                <div class="text-center mt-8">
+                    <button id="load-more-comments" class="px-6 py-2 gradient-border rounded-full hover:bg-opacity-20 transition-all">加载更多</button>
                 </div>
             </div>
         </div>
@@ -652,259 +273,291 @@
                 <a href="#hero" class="text-2xl font-bold mb-4 md:mb-0">PARA</a>
                 <div class="flex space-x-6">
                     <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-spotify text-xl"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-apple text-xl"></i></a>
                     <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-youtube-play text-xl"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-twitter text-xl"></i></a>
                     <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-instagram text-xl"></i></a>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                <div>
-                    <h4 class="font-bold mb-4">音乐</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">专辑</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">单曲</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">MV</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">播放列表</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold mb-4">演出</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">演出日程</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">购票</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">演出回顾</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">巡演周边</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold mb-4">关于</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">艺术家介绍</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">新闻</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">媒体资源</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">联系我们</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold mb-4">商店</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#store" class="text-gray-400 hover:text-primary transition-colors">专辑</a></li>
-                        <li><a href="#store" class="text-gray-400 hover:text-primary transition-colors">周边商品</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">数字下载</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">礼品卡</a></li>
-                    </ul>
-                </div>
-            </div>
-            
             <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
                 <p class="text-gray-400 mb-4 md:mb-0">© 2025 PARA. 保留所有权利。</p>
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">隐私政策</a>
-                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">服务条款</a>
-                    <a href="#" class="text-gray-400 hover:text-primary transition-colors">Cookie 政策</a>
-                </div>
+                <!-- 隐藏管理后台入口 -->
+                <a href="admin.html" class="text-gray-800 hover:text-gray-700 text-xs transition-colors">·</a>
             </div>
         </div>
     </footer>
 
-    <!-- JavaScript -->
+    <!-- 管理员登录弹窗（从页脚隐藏入口进入admin.html） -->
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const musicStyles = {
-                rock: { name: '摇滚', description: '激情与力量', color: 'rgba(255, 59, 48, 0.8)' },
-                jazz: { name: '爵士', description: '优雅与即兴', color: 'rgba(255, 149, 0, 0.8)' },
-                electronic: { name: '电子', description: '节奏与创新', color: 'rgba(0, 122, 255, 0.8)' },
-                folk: { name: '民谣', description: '故事与情感', color: 'rgba(52, 199, 89, 0.8)' }
-            };
-            
-            let currentAudio = null;
-            let currentStyle = null;
-            
-            const styleElements = document.querySelectorAll('.music-style');
-            const musicControls = document.getElementById('music-controls');
-            const pauseBtn = document.getElementById('pause-btn');
-            const nextBtn = document.getElementById('next-btn');
-            const closeBtn = document.getElementById('close-btn');
-            const titleElement = document.querySelector('#hero h1');
-            const subtitleElement = document.querySelector('#hero p');
-            
-            const audioSamples = {
-                'rock-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-                'jazz-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-                'electronic-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-                'folk-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'
-            };
-            
-            Object.keys(audioSamples).forEach(id => {
-                const audio = document.getElementById(id);
-                if (audio) audio.src = audioSamples[id];
-            });
-            
-            styleElements.forEach(element => {
-                element.addEventListener('click', function() {
-                    const style = this.dataset.style;
-                    const audioId = this.dataset.audio;
-                    
-                    if (currentStyle === style) { togglePlayPause(); return; }
-                    
-                    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
-                    
-                    styleElements.forEach(el => {
-                        el.style.flex = '1';
-                        el.querySelector('img').style.transform = 'scale(1)';
-                        el.querySelector('img').style.filter = 'grayscale(100%)';
-                        el.querySelector('div[class^="absolute inset-0"]').style.opacity = '0.7';
-                    });
-                    
-                    this.style.flex = '2';
-                    this.querySelector('img').style.transform = 'scale(1.1)';
-                    this.querySelector('img').style.filter = 'grayscale(0%)';
-                    this.querySelector('div[class^="absolute inset-0"]').style.opacity = '0.3';
-                    
-                    currentAudio = document.getElementById(audioId);
-                    currentStyle = style;
-                    
-                    if (currentAudio) {
-                        currentAudio.play().catch(e => console.log('播放失败:', e));
-                    }
-                    
-                    updateControlsUI();
-                    updateTitleUI(style);
-                    musicControls.classList.remove('hidden');
-                });
-            });
-            
-            pauseBtn.addEventListener('click', togglePlayPause);
-            
-            nextBtn.addEventListener('click', function() {
-                if (!currentStyle) return;
-                const styles = Object.keys(musicStyles);
-                const nextStyle = styles[(styles.indexOf(currentStyle) + 1) % styles.length];
-                document.querySelector(`[data-style="${nextStyle}"]`).click();
-            });
-            
-            closeBtn.addEventListener('click', function() {
-                if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
-                styleElements.forEach(el => {
-                    el.style.flex = '1';
-                    el.querySelector('img').style.transform = 'scale(1)';
-                    el.querySelector('div[class^="absolute inset-0"]').style.opacity = '0.7';
-                });
-                musicControls.classList.add('hidden');
-                titleElement.textContent = '选择你的音乐风格';
-                subtitleElement.textContent = '点击任意风格开始探索';
-                titleElement.style.color = 'white';
-                subtitleElement.style.color = '#9ca3af';
-                currentStyle = null;
-            });
-            
-            function togglePlayPause() {
-                if (!currentAudio) return;
-                if (currentAudio.paused) { currentAudio.play(); pauseBtn.innerHTML = '<i class="fa fa-pause"></i>'; }
-                else { currentAudio.pause(); pauseBtn.innerHTML = '<i class="fa fa-play"></i>'; }
-            }
-            
-            function updateControlsUI() {
-                if (!currentAudio) return;
-                pauseBtn.innerHTML = currentAudio.paused ? '<i class="fa fa-play"></i>' : '<i class="fa fa-pause"></i>';
-            }
-            
-            function updateTitleUI(style) {
-                const styleData = musicStyles[style];
-                if (styleData) {
-                    titleElement.textContent = styleData.name;
-                    subtitleElement.textContent = styleData.description;
-                    titleElement.style.color = styleData.color;
-                    subtitleElement.style.color = 'white';
-                }
-            }
-            
-            Object.keys(audioSamples).forEach(id => {
-                const audio = document.getElementById(id);
-                if (audio) {
-                    audio.addEventListener('play', function() { if (this === currentAudio) pauseBtn.innerHTML = '<i class="fa fa-pause"></i>'; });
-                    audio.addEventListener('pause', function() { if (this === currentAudio) pauseBtn.innerHTML = '<i class="fa fa-play"></i>'; });
-                    audio.addEventListener('ended', function() { if (this === currentAudio) nextBtn.click(); });
-                }
-            });
+    // Supabase 初始化
+    const SUPABASE_URL = 'https://lpncumrthrbzritjutxr.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxwbmN1bXJ0aHJienJpdGp1dHhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzg1NjEsImV4cCI6MjA5MzcxNDU2MX0.yH4s9HESL5sVjdeEZ6kJPq8uvIHtZsMS8rVcpKFHD1Q';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            // 加载更多留言
-            const loadMoreComments = document.getElementById('load-more-comments');
-            const commentsContainer = document.getElementById('comments-container');
-            let commentsLoaded = 3;
-            
-            if (loadMoreComments) {
-                loadMoreComments.addEventListener('click', () => {
-                    loadMoreComments.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 加载中...';
-                    setTimeout(() => {
-                        const names = ['陈静', '杨光', '周婷', '吴宇', '郑华'];
-                        const comments = [
-                            '你的音乐给了我很多灵感，每次听都有不同的感受。',
-                            '期待你的下一张专辑，已经迫不及待想听到更多新作品了！',
-                            '上周的演出太精彩了，现场的氛围真的很棒！',
-                            '你的音乐帮助我度过了很多困难的时刻，非常感谢。',
-                            '我最喜欢《Dream Walker》这首歌，旋律和歌词都很打动我。'
-                        ];
-                        for (let i = 0; i < 2; i++) {
-                            const newComment = document.createElement('div');
-                            newComment.className = 'bg-glass rounded-lg p-6';
-                            const randomName = names[Math.floor(Math.random() * names.length)];
-                            const randomComment = comments[Math.floor(Math.random() * comments.length)];
-                            const randomDate = new Date(Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000));
-                            const dateString = `${randomDate.getFullYear()}-${String(randomDate.getMonth() + 1).padStart(2, '0')}-${String(randomDate.getDate()).padStart(2, '0')}`;
-                            const randomLikes = Math.floor(Math.random() * 50);
-                            newComment.innerHTML = `<div class="flex justify-between items-start mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center font-bold">${randomName.charAt(0)}</div><div><h4 class="font-bold">${randomName}</h4><p class="text-sm text-gray-400">${dateString}</p></div></div><div class="text-gray-400"><i class="fa fa-heart"></i> ${randomLikes}</div></div><p class="text-gray-300">${randomComment}</p>`;
-                            commentsContainer.appendChild(newComment);
+    // 生成或获取用户流水ID
+    function getUserId() {
+        let uid = localStorage.getItem('para_uid');
+        if (!uid) {
+            uid = 'U' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2,4).toUpperCase();
+            localStorage.setItem('para_uid', uid);
+        }
+        return uid;
+    }
+
+    // ===== 好音乐 - 轮播 =====
+    let carouselData = [];
+    let carouselIndex = 0;
+    let carouselTimer = null;
+
+    async function loadMusicCarousel() {
+        const { data, error } = await db
+            .from('music_submissions')
+            .select('*')
+            .eq('status', 'approved')
+            .order('created_at', { ascending: false });
+
+        if (error || !data || data.length === 0) {
+            document.getElementById('carousel-empty').classList.remove('hidden');
+            document.getElementById('music-carousel').classList.add('hidden');
+            document.getElementById('carousel-prev').classList.add('hidden');
+            document.getElementById('carousel-next').classList.add('hidden');
+            return;
+        }
+
+        carouselData = data;
+        renderCarousel();
+    }
+
+    function renderCarousel() {
+        const track = document.getElementById('carousel-track');
+        const dots = document.getElementById('carousel-dots');
+        track.innerHTML = '';
+        dots.innerHTML = '';
+
+        const categoryColors = {
+            '摇滚': 'from-red-900', '爵士': 'from-yellow-900', '电子': 'from-blue-900',
+            '民谣': 'from-green-900', '流行': 'from-purple-900', '其他': 'from-gray-900'
+        };
+
+        carouselData.forEach((item, i) => {
+            const color = categoryColors[item.category] || 'from-gray-900';
+            const slide = document.createElement('div');
+            slide.className = 'min-w-full';
+            slide.innerHTML = `
+                <div class="bg-gradient-to-r ${color} to-dark-light rounded-2xl p-10 md:p-16 flex flex-col md:flex-row items-center gap-8">
+                    <div class="w-32 h-32 md:w-48 md:h-48 rounded-2xl bg-dark-lighter flex items-center justify-center flex-shrink-0 shadow-2xl">
+                        <i class="fa fa-music text-5xl md:text-7xl text-primary"></i>
+                    </div>
+                    <div class="text-center md:text-left">
+                        <span class="inline-block px-3 py-1 bg-primary bg-opacity-20 text-primary rounded-full text-sm mb-3">${item.category}</span>
+                        <h3 class="text-3xl md:text-4xl font-bold mb-2">${item.song_name}</h3>
+                        <p class="text-xl text-gray-300 mb-4">${item.artist}</p>
+                        <p class="text-xs text-gray-500 mb-6">by ${item.user_id}</p>
+                        <a href="${item.music_link}" target="_blank" rel="noopener"
+                            class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-dark font-bold rounded-full hover:bg-opacity-80 transition-all">
+                            <i class="fa fa-headphones"></i> 去听这首歌
+                        </a>
+                    </div>
+                </div>`;
+            track.appendChild(slide);
+
+            const dot = document.createElement('button');
+            dot.className = `w-2 h-2 rounded-full transition-all ${i === 0 ? 'bg-primary w-6' : 'bg-gray-600'}`;
+            dot.addEventListener('click', () => goToSlide(i));
+            dots.appendChild(dot);
+        });
+
+        goToSlide(0);
+        startCarouselTimer();
+    }
+
+    function goToSlide(index) {
+        carouselIndex = (index + carouselData.length) % carouselData.length;
+        document.getElementById('carousel-track').style.transform = `translateX(-${carouselIndex * 100}%)`;
+        document.querySelectorAll('#carousel-dots button').forEach((dot, i) => {
+            dot.className = `rounded-full transition-all ${i === carouselIndex ? 'bg-primary w-6 h-2' : 'bg-gray-600 w-2 h-2'}`;
+        });
+    }
+
+    function startCarouselTimer() {
+        if (carouselTimer) clearInterval(carouselTimer);
+        carouselTimer = setInterval(() => goToSlide(carouselIndex + 1), 4000);
+    }
+
+    document.getElementById('carousel-prev').addEventListener('click', () => { goToSlide(carouselIndex - 1); startCarouselTimer(); });
+    document.getElementById('carousel-next').addEventListener('click', () => { goToSlide(carouselIndex + 1); startCarouselTimer(); });
+
+    // ===== 好音乐 - 投稿 =====
+    document.getElementById('music-submit-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        const successEl = document.getElementById('submit-success');
+        const errorEl = document.getElementById('submit-error');
+        successEl.classList.add('hidden');
+        errorEl.classList.add('hidden');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 提交中...';
+
+        const userId = getUserId();
+        const { error } = await db.from('music_submissions').insert({
+            user_id: userId,
+            song_name: document.getElementById('song-name').value.trim(),
+            artist: document.getElementById('artist').value.trim(),
+            category: document.getElementById('category').value,
+            music_link: document.getElementById('music-link').value.trim(),
+            status: 'pending'
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-paper-plane"></i> 提交推荐';
+
+        if (error) {
+            errorEl.textContent = '提交失败，请稍后重试：' + error.message;
+            errorEl.classList.remove('hidden');
+        } else {
+            document.getElementById('user-id-display').textContent = userId;
+            successEl.classList.remove('hidden');
+            this.reset();
+        }
+    });
+
+    // ===== 好周边 - 从数据库加载 =====
+    async function loadProducts() {
+        const loading = document.getElementById('products-loading');
+        const grid = document.getElementById('products-grid');
+        const empty = document.getElementById('products-empty');
+
+        const { data, error } = await db
+            .from('products')
+            .select('*')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true });
+
+        loading.classList.add('hidden');
+
+        if (error || !data || data.length === 0) {
+            empty.classList.remove('hidden');
+            return;
+        }
+
+        grid.innerHTML = '';
+        data.forEach(product => {
+            const shopLabel = product.shop_type === 'taobao' ? '淘宝' : product.shop_type === '1688' ? '1688' : '购买';
+            const card = document.createElement('div');
+            card.className = 'bg-glass rounded-lg overflow-hidden group cursor-pointer';
+            card.innerHTML = `
+                <a href="${product.shop_link}" target="_blank" rel="noopener" class="block">
+                    <div class="relative aspect-square overflow-hidden bg-dark-lighter">
+                        ${product.image_url
+                            ? `<img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-contain p-4 transform transition-transform group-hover:scale-110">`
+                            : `<div class="w-full h-full flex items-center justify-center"><i class="fa fa-shopping-bag text-5xl text-gray-600"></i></div>`
                         }
-                        commentsLoaded += 2;
-                        if (commentsLoaded >= 10) {
-                            loadMoreComments.innerHTML = '没有更多留言';
-                            loadMoreComments.disabled = true;
-                            loadMoreComments.classList.add('opacity-50', 'cursor-not-allowed');
-                        } else {
-                            loadMoreComments.innerHTML = '加载更多';
-                        }
-                    }, 1000);
-                });
-            }
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-xl mb-2">${product.name}</h3>
+                        ${product.description ? `<p class="text-gray-400 text-sm mb-3">${product.description}</p>` : ''}
+                        <div class="flex justify-between items-center">
+                            ${product.price ? `<span class="text-primary font-bold text-xl">¥${product.price}</span>` : '<span class="text-gray-400">价格面议</span>'}
+                            <span class="px-4 py-2 bg-primary text-dark font-bold rounded-full text-sm hover:bg-opacity-80 transition-all">
+                                <i class="fa fa-external-link mr-1"></i>${shopLabel}
+                            </span>
+                        </div>
+                    </div>
+                </a>`;
+            grid.appendChild(card);
+        });
+    }
 
-            // 商品分类切换
-            const categoryBtns = document.querySelectorAll('.category-btn');
-            categoryBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    categoryBtns.forEach(b => {
-                        b.classList.remove('bg-primary', 'text-dark');
-                        b.classList.add('bg-dark-lighter', 'text-white');
-                    });
-                    this.classList.remove('bg-dark-lighter', 'text-white');
-                    this.classList.add('bg-primary', 'text-dark');
-                });
-            });
-
-            // 购物车通知
-            const cartNotification = document.getElementById('cart-notification');
-            document.querySelectorAll('.music-style ~ * button, #merchandise button').forEach(btn => {
-                if (btn.textContent.includes('加入购物车')) {
-                    btn.addEventListener('click', function() {
-                        cartNotification.classList.remove('translate-y-20', 'opacity-0');
-                        cartNotification.classList.add('translate-y-0', 'opacity-100');
-                        setTimeout(() => {
-                            cartNotification.classList.remove('translate-y-0', 'opacity-100');
-                            cartNotification.classList.add('translate-y-20', 'opacity-0');
-                        }, 3000);
-                    });
+    // ===== 加载更多留言 =====
+    const loadMoreComments = document.getElementById('load-more-comments');
+    const commentsContainer = document.getElementById('comments-container');
+    let commentsLoaded = 2;
+    if (loadMoreComments) {
+        loadMoreComments.addEventListener('click', () => {
+            loadMoreComments.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 加载中...';
+            setTimeout(() => {
+                const names = ['陈静', '杨光', '周婷', '吴宇', '郑华'];
+                const comments = ['你的音乐给了我很多灵感！', '期待下一张专辑！', '现场太精彩了！', '音乐帮我度过了很多困难时刻。', '旋律和歌词都很打动我。'];
+                for (let i = 0; i < 2; i++) {
+                    const el = document.createElement('div');
+                    el.className = 'bg-glass rounded-lg p-6';
+                    const name = names[Math.floor(Math.random() * names.length)];
+                    const comment = comments[Math.floor(Math.random() * comments.length)];
+                    const d = new Date(Date.now() - Math.floor(Math.random() * 30 * 86400000));
+                    el.innerHTML = `<div class="flex justify-between items-start mb-4"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-secondary text-dark flex items-center justify-center font-bold">${name[0]}</div><div><h4 class="font-bold">${name}</h4><p class="text-sm text-gray-400">${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}</p></div></div><div class="text-gray-400"><i class="fa fa-heart"></i> ${Math.floor(Math.random()*50)}</div></div><p class="text-gray-300">${comment}</p>`;
+                    commentsContainer.appendChild(el);
                 }
+                commentsLoaded += 2;
+                loadMoreComments.innerHTML = commentsLoaded >= 8 ? '没有更多了' : '加载更多';
+                if (commentsLoaded >= 8) { loadMoreComments.disabled = true; loadMoreComments.classList.add('opacity-50', 'cursor-not-allowed'); }
+            }, 800);
+        });
+    }
+
+    // ===== 英雄区域音乐交互 =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const musicStyles = {
+            rock: { name: '摇滚', description: '激情与力量', color: 'rgba(255,59,48,0.8)' },
+            jazz: { name: '爵士', description: '优雅与即兴', color: 'rgba(255,149,0,0.8)' },
+            electronic: { name: '电子', description: '节奏与创新', color: 'rgba(0,122,255,0.8)' },
+            folk: { name: '民谣', description: '故事与情感', color: 'rgba(52,199,89,0.8)' }
+        };
+        let currentAudio = null, currentStyle = null;
+        const styleElements = document.querySelectorAll('.music-style');
+        const musicControls = document.getElementById('music-controls');
+        const pauseBtn = document.getElementById('pause-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const titleEl = document.querySelector('#hero h1');
+        const subtitleEl = document.querySelector('#hero p');
+        const audioSamples = {
+            'rock-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+            'jazz-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+            'electronic-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+            'folk-audio': 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3'
+        };
+        Object.keys(audioSamples).forEach(id => { const a = document.getElementById(id); if (a) a.src = audioSamples[id]; });
+
+        styleElements.forEach(el => {
+            el.addEventListener('click', function() {
+                const style = this.dataset.style, audioId = this.dataset.audio;
+                if (currentStyle === style) { togglePlay(); return; }
+                if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; }
+                styleElements.forEach(e => { e.style.flex='1'; e.querySelector('img').style.filter='grayscale(100%)'; });
+                this.style.flex = '2';
+                this.querySelector('img').style.filter = 'grayscale(0%)';
+                currentAudio = document.getElementById(audioId);
+                currentStyle = style;
+                if (currentAudio) currentAudio.play().catch(()=>{});
+                pauseBtn.innerHTML = '<i class="fa fa-pause"></i>';
+                const sd = musicStyles[style];
+                titleEl.textContent = sd.name; subtitleEl.textContent = sd.description; titleEl.style.color = sd.color;
+                musicControls.classList.remove('hidden');
             });
         });
 
-        // 导航栏滚动效果
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            navbar.classList.toggle('bg-glass', window.scrollY > 50);
+        pauseBtn.addEventListener('click', togglePlay);
+        nextBtn.addEventListener('click', () => {
+            const styles = Object.keys(musicStyles);
+            document.querySelector(`[data-style="${styles[(styles.indexOf(currentStyle)+1)%styles.length]}"]`).click();
         });
-        
+        closeBtn.addEventListener('click', () => {
+            if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+            styleElements.forEach(e => { e.style.flex='1'; e.querySelector('img').style.filter=''; });
+            musicControls.classList.add('hidden');
+            titleEl.textContent = '选择你的音乐风格'; titleEl.style.color = 'white';
+            subtitleEl.textContent = '点击任意风格开始探索'; currentStyle = null;
+        });
+        function togglePlay() {
+            if (!currentAudio) return;
+            if (currentAudio.paused) { currentAudio.play(); pauseBtn.innerHTML = '<i class="fa fa-pause"></i>'; }
+            else { currentAudio.pause(); pauseBtn.innerHTML = '<i class="fa fa-play"></i>'; }
+        }
+
+        // 导航栏滚动
+        window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('bg-glass', window.scrollY > 50); });
+
         // 移动端菜单
         const menuToggle = document.getElementById('menu-toggle');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -912,20 +565,20 @@
             mobileMenu.classList.toggle('hidden');
             menuToggle.innerHTML = mobileMenu.classList.contains('hidden') ? '<i class="fa fa-bars"></i>' : '<i class="fa fa-times"></i>';
         });
-        
+
         // 平滑滚动
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', function(e) {
                 e.preventDefault();
-                if (!mobileMenu.classList.contains('hidden')) {
-                    mobileMenu.classList.add('hidden');
-                    menuToggle.innerHTML = '<i class="fa fa-bars"></i>';
-                }
-                const targetElement = document.querySelector(this.getAttribute('href'));
-                if (targetElement) {
-                    window.scrollTo({ top: targetElement.offsetTop - 80, behavior: 'smooth' });
-                }
+                mobileMenu.classList.add('hidden'); menuToggle.innerHTML = '<i class="fa fa-bars"></i>';
+                const t = document.querySelector(this.getAttribute('href'));
+                if (t) window.scrollTo({ top: t.offsetTop - 80, behavior: 'smooth' });
             });
         });
+
+        // 初始化数据
+        loadMusicCarousel();
+        loadProducts();
+    });
     </script>
 </body></html>
